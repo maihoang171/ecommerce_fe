@@ -1,10 +1,16 @@
-function App() {
+import { AppRoute } from "./routes/route";
+import "./index.css";
+import { Toaster } from "sonner";
 
+function App() {
   return (
-    <>
-      My Ecommerce App
-    </>
-  )
+    <div className="h-screen">
+      <div className="pt-10">
+        <AppRoute />
+      </div>
+      <Toaster />
+    </div>
+  );
 }
 
-export default App
+export default App;
