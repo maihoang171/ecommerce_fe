@@ -1,0 +1,88 @@
+import { useForm } from "react-hook-form";
+import { registerSchema, type RegisterInput } from "../schemas/authSchema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useRegisterUser } from "../hooks/useAuth";
+
+export const Register = () => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<RegisterInput>({
+    resolver: zodResolver(registerSchema),
+    mode: "onChange",
+    criteriaMode: "all",
+  });
+
+  const { handleRegisterUser } = useRegisterUser();
+  console.log("Current Password Types Object:", errors.password?.types);
+
+  return (
+    <div className="w-full max-w-md mx-auto p-5">
+      <h1 className="mb-3 text-xl">Create your new account</h1>
+      <form
+        onSubmit={handleSubmit(handleRegisterUser)}
+        className="flex flex-col gap-5 justify-center"
+      >
+        <fieldset>
+          <input
+            id="userName"
+            type="text"
+            placeholder="Username"
+            className={`input w-full ${errors.userName ? "input-error" : ""}`}
+            {...register("userName")}
+          />
+          {errors.userName && (
+            <span className="error-message text-red-500 text-xs flex flex-col gap-1 mt-1 text-left">
+              • {errors.userName.message}
+            </span>
+          )}
+        </fieldset>
+
+        <fieldset className="flex flex-col gap-1">
+          <input
+            id="password"
+            type="password"
+            placeholder="Password"
+            className={`input w-full ${errors.password ? "input-error" : ""}`}
+            {...register("password")}
+          />
+          {errors.password?.types && (
+            <div className="error-message text-red-500 text-xs flex flex-col gap-1 mt-1 text-left">
+              {Object.values(errors.password.types)
+                .flatMap((msg) => (Array.isArray(msg) ? msg : [msg]))
+                .map((message, index) => (
+                  <span key={index}>• {String(message)}</span>
+                ))}
+            </div>
+          )}
+        </fieldset>
+
+        <fieldset>
+          <input
+            id="confirmPassword"
+            type="password"
+            placeholder="Confirm Password"
+            className={`input w-full ${errors.confirmPassword ? "input-error" : ""}`}
+            {...register("confirmPassword")}
+          />
+          {errors.confirmPassword?.types && (
+            <div className="error-message text-red-500 text-xs flex flex-col gap-1 mt-1 text-left">
+              {Object.values(errors.confirmPassword.types).map((msg, index) => (
+                <span key={index}>• {msg}</span>
+              ))}
+            </div>
+          )}
+        </fieldset>
+
+        <button
+          className="btn bg-black text-white w-full hover:bg-gray-700 transition-colors"
+          type="submit"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Loading..." : "Register"}
+        </button>
+      </form>
+    </div>
+  );
+};
