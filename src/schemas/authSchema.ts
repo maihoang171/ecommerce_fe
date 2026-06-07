@@ -1,6 +1,6 @@
 import z from "zod";
 
-export const registerSchema = z.object({
+export const baseAuthSchema = z.object({
     userName: z
         .string()
         .trim()
@@ -18,11 +18,14 @@ export const registerSchema = z.object({
         .regex(/[a-z]/, "Password must have at least one lowercase letter")
         .regex(/[0-9]/, "Password must have at least one number")
         .regex(/[^a-zA-Z0-9]/, "Password must have at least one special character"),
+})
 
+export const registerSchema = baseAuthSchema.extend({
     confirmPassword: z.string().trim().min(1, "Please confirm your password")
 }).refine(data => data.password === data.confirmPassword, {
     message: "Passwords do not match",
     path: ["confirmPassword"],
 });
 
+export type LoginInput = z.infer<typeof baseAuthSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
