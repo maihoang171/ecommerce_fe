@@ -1,0 +1,90 @@
+import { useForm } from "react-hook-form";
+import { baseAuthSchema, type LoginInput } from "../schemas/authSchema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useAuthModalStore } from "../stores/useAuthModeStore";
+import { useLogin } from "../hooks/useAuth";
+
+export const Login = () => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginInput>({
+    resolver: zodResolver(baseAuthSchema),
+    mode: "onChange",
+    criteriaMode: "all",
+  });
+
+  const { openRegister, close } = useAuthModalStore();
+  const { handleLogin } = useLogin();
+
+  const handleLoginSubmit = async (data: LoginInput) => {
+    try {
+      await handleLogin(data);
+      close();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  return (
+    <div className="w-full max-w-md mx-auto p-5">
+      <h1 className="mb-3 text-xl" arial-label="Login">
+        Welcome back!
+      </h1>
+
+      <form
+        className="flex flex-col gap-5 justify-center"
+        onSubmit={handleSubmit(handleLoginSubmit)}
+      >
+        <fieldset>
+          <input
+            id="userName"
+            className={`input w-full ${errors.userName ? "input-error" : ""}`}
+            type="text"
+            placeholder="Username"
+            {...register("userName")}
+          />
+          {errors.userName && (
+            <span className="error-message text-red-500 text-xs flex flex-col gap-1 mt-1 text-left">
+              • {errors.userName.message}
+            </span>
+          )}
+        </fieldset>
+
+        <fieldset>
+          <input
+            id="password"
+            type="password"
+            className={`input w-full ${errors.password ? "input-error" : ""}`}
+            placeholder="Password"
+            {...register("password")}
+          />
+          {errors.password?.types && (
+            <div className="error-message text-red-500 text-xs flex flex-col gap-1 mt-1 text-left">
+              {Object.values(errors.password.types)
+                .flatMap((msg) => (Array.isArray(msg) ? msg : [msg]))
+                .map((msg, index) => (
+                  <span key={index}>• {msg}</span>
+                ))}
+            </div>
+          )}
+        </fieldset>
+        <button
+          className="btn bg-black text-white w-full hover:bg-gray-700 transition-colors"
+          type="submit"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Loading..." : "Login"}
+        </button>
+      </form>
+      <p className="text-center mt-2">
+        Don't have an account? Register{" "}
+        <button onClick={openRegister} className="text-primary link link-hover">
+          here
+        </button>
+        .
+      </p>
+    </div>
+  );
+};

@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import { registerSchema, type RegisterInput } from "../schemas/authSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useAuthModalStore } from "../stores/useAuthModeStore";
 import { useRegisterUser } from "../hooks/useAuth";
 
 export const Register = () => {
@@ -15,13 +16,18 @@ export const Register = () => {
   });
 
   const { handleRegisterUser } = useRegisterUser();
-  console.log("Current Password Types Object:", errors.password?.types);
+  const { openLogin, close } = useAuthModalStore();
+
+  const handleRegisterSubmit = async (data: RegisterInput) => {
+    await handleRegisterUser(data);
+    close();
+  };
 
   return (
     <div className="w-full max-w-md mx-auto p-5">
       <h1 className="mb-3 text-xl">Create your new account</h1>
       <form
-        onSubmit={handleSubmit(handleRegisterUser)}
+        onSubmit={handleSubmit(handleRegisterSubmit)}
         className="flex flex-col gap-5 justify-center"
       >
         <fieldset>
@@ -83,6 +89,14 @@ export const Register = () => {
           {isSubmitting ? "Loading..." : "Register"}
         </button>
       </form>
+
+      <p className="text-center mt-2">
+        Already have an account? Click{" "}
+        <button onClick={openLogin} className="text-primary link link-hover">
+          here
+        </button>{" "}
+        to login.
+      </p>
     </div>
   );
 };
