@@ -15,12 +15,6 @@ export const Header = () => {
 
   const { handleLogout } = useLogout();
 
-  const handleLogoutSubmit = () => {
-    if (user) {
-      handleLogout(user?.id);
-    }
-  };
-
   const userInitial = getInitials(user?.userName ?? "");
   return (
     <>
@@ -144,7 +138,7 @@ export const Header = () => {
                       <a>Profile</a>
                     </li>
                     <li>
-                      <button onClick={handleLogoutSubmit}>Logout</button>
+                      <button onClick={handleLogout}>Logout</button>
                     </li>
                   </ul>
                 </div>

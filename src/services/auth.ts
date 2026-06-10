@@ -27,7 +27,10 @@ export const registerService = async (payload: IAuthPayload) => {
 };
 
 export const loginService = async (payload: IAuthPayload) => {
-  const res = await axiosClient.post<ApiResponse<IUser>>("/auth/login", payload);
+  const res = await axiosClient.post<ApiResponse<IUser>>(
+    "/auth/login",
+    payload,
+  );
   return res.data;
 };
 
@@ -42,5 +45,6 @@ export const getRefreshTokenService = async () => {
 };
 
 export const logoutService = async (userId: string) => {
-  return await axiosClient.post("/auth/logout", userId);
+  const res = await axiosClient.post<ApiResponse<null>>("/auth/logout", userId);
+  return res.data;
 };
