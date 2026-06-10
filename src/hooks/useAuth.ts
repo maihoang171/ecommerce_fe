@@ -2,7 +2,8 @@ import {
   registerService,
   loginService,
   getRefreshTokenService,
-  checkAuthSessionService
+  checkAuthSessionService,
+  logoutService
 } from "../services/auth";
 import type { RegisterInput, LoginInput } from "../schemas/authSchema";
 import { toast } from "sonner";
@@ -104,4 +105,29 @@ export const useSyncAuthSession = () => {
   };
 
   return { isCheckingAuth, handleSyncAuthSession };
+};
+
+export const useLogout = () => {
+  const { clearAuth } = useAuthStore();
+
+  const handleLogout = async (userId: string) => {
+    try {
+      await logoutService(userId);
+      clearAuth();
+
+      toast.success("Logout successfully", {
+        position: "bottom-left",
+      });
+
+      window.location.href = "/";
+    } catch (error) {
+      const errMsg = extractErrorMsg(error);
+
+      toast.error(`Logout failed: ${errMsg}`, {
+        position: "bottom-left",
+      });
+    }
+  };
+
+  return { handleLogout };
 };

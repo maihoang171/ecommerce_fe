@@ -40,3 +40,7 @@ export const getRefreshTokenService = async () => {
   const res = await axiosClient.get<ApiResponse<IUser>>("/auth/refresh-token");
   return res.data;
 };
+
+export const logoutService = async (userId: string) => {
+  return await axiosClient.post("/auth/logout", userId);
+};
