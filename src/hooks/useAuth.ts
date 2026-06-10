@@ -2,13 +2,15 @@ import {
   registerService,
   loginService,
   getRefreshTokenService,
-  checkAuthSessionService
+  checkAuthSessionService,
+  logoutService,
 } from "../services/auth";
 import type { RegisterInput, LoginInput } from "../schemas/authSchema";
 import { toast } from "sonner";
 import { useAuthStore } from "../stores/useAuthStore";
 import { extractErrorMsg } from "../utils/error";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export const useRegisterUser = () => {
   const handleRegisterUser = async (data: RegisterInput) => {
@@ -71,7 +73,7 @@ export const useLogin = () => {
 
 export const useSyncAuthSession = () => {
   const { setAuth } = useAuthStore();
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true)
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   const handleSyncAuthSession = async () => {
     try {
@@ -90,7 +92,6 @@ export const useSyncAuthSession = () => {
         throw new Error("User not found");
       }
 
-
       setAuth(user, newAccessToken);
     } catch (error) {
       const errMsg = extractErrorMsg(error);
@@ -99,9 +100,52 @@ export const useSyncAuthSession = () => {
         position: "bottom-left",
       });
     } finally {
-      setIsCheckingAuth(false)
+      setIsCheckingAuth(false);
     }
   };
 
   return { isCheckingAuth, handleSyncAuthSession };
+};
+
+export const useLogout = () => {
+  const { clearAuth } = useAuthStore();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    const user = useAuthStore.getState().user;
+
+    if (!user) {
+      clearAuth();
+      toast.success("Session cleared. Logged out", {
+        position: "bottom-left",
+      });
+
+      navigate("/");
+      return;
+    }
+
+    try {
+      await logoutService(user.id);
+      clearAuth();
+
+      toast.success("Logout successfully", {
+        position: "bottom-left",
+      });
+
+      navigate("/");
+    } catch (error) {
+      const errMsg = extractErrorMsg(error);
+      console.error(errMsg);
+
+      clearAuth();
+
+      toast.error("Server error, forced log out", {
+        position: "bottom-left",
+      });
+
+      navigate("/");
+    }
+  };
+
+  return { handleLogout };
 };

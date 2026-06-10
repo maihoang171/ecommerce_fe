@@ -6,11 +6,14 @@ import { Register } from "./register";
 import { useAuthModalStore } from "../stores/useAuthModeStore";
 import { useAuthStore } from "../stores/useAuthStore";
 import { getInitials } from "../utils/auth";
+import { useLogout } from "../hooks/useAuth";
 
 export const Header = () => {
   const { authMode, openLogin, close } = useAuthModalStore();
 
   const { user, isLoggedIn } = useAuthStore();
+
+  const { handleLogout } = useLogout();
 
   const userInitial = getInitials(user?.userName ?? "");
   return (
@@ -87,7 +90,7 @@ export const Header = () => {
           </div>
 
           {/* =========================================RIGHT SECTION: UTILITIES */}
-          {/* TODO: add link */}
+          {/* TODO: handle search and shopping cart features */}
           <div>
             <div className="flex flex-row items-center justify-end gap-2 md:gap-5">
               <Link
@@ -130,12 +133,12 @@ export const Header = () => {
                     <li className="menu-title text-xs opacity-90">
                       Hi, {user?.userName}
                     </li>
-                    {/* TODO: add link, handle logout */}
+                    {/* TODO: add link to profile */}
                     <li>
                       <a>Profile</a>
                     </li>
                     <li>
-                      <button>Logout</button>
+                      <button onClick={handleLogout}>Logout</button>
                     </li>
                   </ul>
                 </div>

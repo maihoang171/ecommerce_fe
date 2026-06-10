@@ -6,21 +6,33 @@ import {
     useRegisterUser,
     useLogin,
     useSyncAuthSession,
+    useLogout
 } from "../hooks/useAuth";
 import {
     registerService,
     loginService,
     checkAuthSessionService,
     getRefreshTokenService,
+    logoutService
 } from "../services/auth";
 import { toast } from "sonner";
 import { useAuthStore } from "../stores/useAuthStore";
+
+const mockNavigate = vi.fn();
+vi.mock("react-router-dom", async () => {
+    const actual = await vi.importActual<typeof import("react-router-dom")>("react-router-dom");
+    return {
+        ...actual,
+        useNavigate: () => mockNavigate,
+    };
+});
 
 vi.mock("../services/auth", () => ({
     registerService: vi.fn(),
     loginService: vi.fn(),
     checkAuthSessionService: vi.fn(),
     getRefreshTokenService: vi.fn(),
+    logoutService: vi.fn(),
 }));
 
 vi.mock("sonner", () => ({
@@ -300,3 +312,85 @@ describe("useSyncAuthSession Custom Hook", () => {
         expect(useAuthStore.getState().user).toEqual(mockUserData)
     })
 });
+
+describe("useLogout Custom Hook", () => {
+    const mockLogoutService = vi.mocked(logoutService);
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+    })
+    afterEach(() => {
+        cleanup();
+    });
+
+    it("should toast session cleared and navigate to homepage '/' when user is not found", async () => {
+        useAuthStore.setState({
+            user: null,
+            isLoggedIn: false,
+        });
+
+        const { result } = renderHook(() => useLogout());
+
+        await result.current.handleLogout();
+
+        expect(mockLogoutService).not.toHaveBeenCalled();
+        expect(mockToastSuccess).toHaveBeenCalledWith("Session cleared. Logged out", {
+            position: "bottom-left",
+        });
+        expect(mockNavigate).toHaveBeenCalledWith("/");
+    });
+
+
+    const mockUserData = {
+        id: "1",
+        userName: "user1",
+        isAdmin: false,
+    };
+    it("should toast logout successfully and navigate to homepage '/' on success", async () => {
+        useAuthStore.setState({
+            user: mockUserData,
+            isLoggedIn: true,
+        });
+
+        const mockRes = {
+            success: true,
+            data: null,
+        }
+        mockLogoutService.mockResolvedValue(mockRes)
+
+        const { result } = renderHook(() => useLogout())
+
+        await result.current.handleLogout()
+
+        expect(mockLogoutService).toHaveBeenCalledWith(mockUserData.id)
+
+        expect(mockToastSuccess).toHaveBeenCalledWith("Logout successfully", {
+            position: "bottom-left",
+        });
+
+        expect(mockNavigate).toHaveBeenCalledWith("/");
+    })
+
+    it("should toast force logout and navigate to homepage '/' when error occured", async () => {
+        useAuthStore.setState({
+            user: mockUserData,
+            isLoggedIn: true,
+        });
+
+        const err = new Error("Something went wrong");
+        mockLogoutService.mockRejectedValue(err)
+
+        const { result } = renderHook(() => useLogout())
+
+        await result.current.handleLogout()
+
+        expect(mockToastError).toHaveBeenCalledWith("Server error, forced log out", {
+            position: "bottom-left",
+        });
+
+        expect(mockNavigate).toHaveBeenCalledWith("/");
+
+
+    })
+
+})
