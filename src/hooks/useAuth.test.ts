@@ -2,16 +2,25 @@
 import "@testing-library/jest-dom/vitest";
 import { describe, it, vi, beforeEach, expect, afterEach } from "vitest";
 import { cleanup, renderHook } from "@testing-library/react";
-import { useRegisterUser, useLogin, useSyncAuthSession, } from "../hooks/useAuth";
-import { registerService, loginService, checkAuthSessionService } from "../services/auth";
+import {
+    useRegisterUser,
+    useLogin,
+    useSyncAuthSession,
+} from "../hooks/useAuth";
+import {
+    registerService,
+    loginService,
+    checkAuthSessionService,
+    getRefreshTokenService,
+} from "../services/auth";
 import { toast } from "sonner";
-import { type AxiosResponse } from "axios";
 import { useAuthStore } from "../stores/useAuthStore";
 
 vi.mock("../services/auth", () => ({
     registerService: vi.fn(),
     loginService: vi.fn(),
     checkAuthSessionService: vi.fn(),
+    getRefreshTokenService: vi.fn(),
 }));
 
 vi.mock("sonner", () => ({
@@ -41,13 +50,18 @@ describe("useRegisterUser Custom Hook", () => {
     };
 
     it("should strip confirmPassword and call registerService with correct payload on success", async () => {
-        mockRegisterService.mockResolvedValue({
-            data: { success: true }
-        } as AxiosResponse);
+        const mockResponse = {
+            success: true,
+            data: {
+                id: "1",
+                userName: "user1",
+                isAdmin: false,
+            },
+        };
+
+        mockRegisterService.mockResolvedValue(mockResponse);
 
         const { result } = renderHook(() => useRegisterUser());
-
-
 
         await result.current.handleRegisterUser(validInput);
 
@@ -57,7 +71,7 @@ describe("useRegisterUser Custom Hook", () => {
         });
 
         expect(mockToastSuccess).toHaveBeenCalledWith("Register successfully", {
-            position: "bottom-left"
+            position: "bottom-left",
         });
     });
 
@@ -69,11 +83,13 @@ describe("useRegisterUser Custom Hook", () => {
 
         await result.current.handleRegisterUser(validInput);
 
-        expect(mockToastError).toHaveBeenCalledWith(`Register failed: ${err.message}`, {
-            position: "bottom-left"
-        });
+        expect(mockToastError).toHaveBeenCalledWith(
+            `Register failed: ${err.message}`,
+            {
+                position: "bottom-left",
+            },
+        );
     });
-
 });
 
 describe("useLogin Custom Hook", () => {
@@ -96,15 +112,46 @@ describe("useLogin Custom Hook", () => {
         password: "User1234@",
     };
 
-    it("should sync user data to Zustand store and trigger success toast on success", async () => {
-        const mockUserData = {
-            id: 1,
-            userName: "user1"
-        }
+    const mockUserData = {
+        id: "1",
+        userName: "user1",
+        isAdmin: false,
+    };
 
+    it("should throw error if user not found", async () => {
         mockLoginService.mockResolvedValue({
-            data: mockUserData
-        } as AxiosResponse);
+            success: true,
+            accessToken: "mockAccessToken",
+            data: null,
+        });
+
+        const { result } = renderHook(() => useLogin());
+
+        await expect(result.current.handleLogin(validInput)).rejects.toThrow(
+            "User not found",
+        );
+    });
+
+    it("should throw error if access token not found", async () => {
+        mockLoginService.mockResolvedValue({
+            success: true,
+            accessToken: undefined,
+            data: mockUserData,
+        });
+
+        const { result } = renderHook(() => useLogin());
+
+        await expect(result.current.handleLogin(validInput)).rejects.toThrow(
+            "Access token not found",
+        );
+    });
+
+    it("should sync user data to Zustand store and trigger success toast on success", async () => {
+        mockLoginService.mockResolvedValue({
+            success: true,
+            accessToken: "mockAccessToken",
+            data: mockUserData,
+        });
 
         const { result } = renderHook(() => useLogin());
 
@@ -115,9 +162,9 @@ describe("useLogin Custom Hook", () => {
         expect(useAuthStore.getState().user).toEqual(mockUserData);
         expect(useAuthStore.getState().isLoggedIn).toBe(true);
         expect(mockToastSuccess).toHaveBeenCalledWith("Welcome back, user1! ", {
-            position: "bottom-left"
+            position: "bottom-left",
         });
-    })
+    });
 
     it("should trigger error toast on failure", async () => {
         const err = new Error("Something went wrong");
@@ -127,56 +174,129 @@ describe("useLogin Custom Hook", () => {
 
         await expect(result.current.handleLogin(validInput)).rejects.toThrow();
 
-        expect(mockToastError).toHaveBeenCalledWith(`Login failed: ${err.message}`, {
-            position: "bottom-left"
-        });
+        expect(mockToastError).toHaveBeenCalledWith(
+            `Login failed: ${err.message}`,
+            {
+                position: "bottom-left",
+            },
+        );
     });
-})
+});
 
 describe("useSyncAuthSession Custom Hook", () => {
     const mockCheckAuthSessionService = vi.mocked(checkAuthSessionService);
+    const mockGetRefreshTokenService = vi.mocked(getRefreshTokenService);
 
     beforeEach(() => {
-        vi.clearAllMocks()
+        vi.clearAllMocks();
         useAuthStore.setState({
             user: null,
             isLoggedIn: false,
-        })
+        });
     });
 
     afterEach(() => {
         cleanup();
     });
 
-    it("should sync user data to Zustand store on success", async () => {
-        const mockUserData = {
-            id: 1,
-            userName: "user1"
-        }
+    it("should throw error if session expired", async () => {
+        mockGetRefreshTokenService.mockResolvedValue({
+            success: false,
+            accessToken: undefined,
+            data: null,
+        });
+
+        const { result } = renderHook(() => useSyncAuthSession());
+
+        await expect(
+            result.current.handleSyncAuthSession(),
+        ).resolves.toBeUndefined();
+        expect(mockToastError).toHaveBeenCalledWith(
+            "Sync session failed: Session expired.",
+            {
+                position: "bottom-left",
+            },
+        );
+    });
+
+    it("should throw error if accessToken not found", async () => {
+        mockGetRefreshTokenService.mockResolvedValue({
+            success: true,
+            accessToken: undefined,
+            data: null,
+        });
+
+        const { result } = renderHook(() => useSyncAuthSession());
+
+        await expect(
+            result.current.handleSyncAuthSession(),
+        ).resolves.toBeUndefined();
+        expect(mockToastError).toHaveBeenCalledWith(
+            "Sync session failed: Session expired.",
+            {
+                position: "bottom-left",
+            },
+        );
+    });
+
+    it("should throw error if response is false", async () => {
+        mockGetRefreshTokenService.mockResolvedValue({
+            success: false,
+            accessToken: "mockAccessToken",
+            data: null,
+        });
+
+        const { result } = renderHook(() => useSyncAuthSession());
 
         mockCheckAuthSessionService.mockResolvedValue({
-            data: mockUserData
-        } as AxiosResponse);
+            success: false,
+            data: null,
+        });
 
-        const { result } = renderHook(() => useSyncAuthSession());
+        expect(result.current.handleSyncAuthSession()).resolves.toBeUndefined();
+    });
 
-        await result.current.handleSyncAuthSession();
+    it("should throw error if user not found", async () => {
+        mockGetRefreshTokenService.mockResolvedValue({
+            success: true,
+            accessToken: "mockAccessToken",
+            data: null,
+        });
 
-        expect(mockCheckAuthSessionService).toHaveBeenCalled()
-        expect(useAuthStore.getState().user).toEqual(mockUserData);
-        expect(useAuthStore.getState().isLoggedIn).toBe(true);
+        mockCheckAuthSessionService.mockResolvedValue({
+            success: true,
+            data: null
+        })
+
+        const { result } = renderHook(() => useSyncAuthSession())
+
+        expect(result.current.handleSyncAuthSession()).resolves.toBeUndefined()
     })
 
-    it("should trigger error toast on failure", async () => {
-        const err = new Error("Something went wrong");
-        mockCheckAuthSessionService.mockRejectedValue(err);
+    it("should setAuth on success", async () => {
+        const mockGetRefreshToken = {
+            success: true,
+            accessToken: "mockAccessToken",
+            data: null,
+        }
+        mockGetRefreshTokenService.mockResolvedValue(mockGetRefreshToken)
 
-        const { result } = renderHook(() => useSyncAuthSession());
+        const mockUserData = {
+            id: "1",
+            userName: "user1",
+            isAdmin: false,
+        };
 
-        await result.current.handleSyncAuthSession();
+        mockCheckAuthSessionService.mockResolvedValue({
+            success: true,
+            data: mockUserData
+        })
 
-        expect(mockToastError).toHaveBeenCalledWith(`Sync session failed: ${err.message}`, {
-            position: "bottom-left"
-        });
-    });
-})
+        const { result } = renderHook(() => useSyncAuthSession())
+
+        const returnedUser = await result.current.handleSyncAuthSession()
+
+        expect(returnedUser).toBeUndefined()
+        expect(useAuthStore.getState().user).toEqual(mockUserData)
+    })
+});

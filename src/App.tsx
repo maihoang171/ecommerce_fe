@@ -1,18 +1,19 @@
 import { useEffect } from "react";
-import { useAuthStore } from "./stores/useAuthStore";
 import { useSyncAuthSession } from "./hooks/useAuth";
 import { AppRoute } from "./routes/route";
 import "./index.css";
 import { Toaster } from "sonner";
 
 function App() {
-  const loginAction = useAuthStore((state) => state.login);
-  const { handleSyncAuthSession } = useSyncAuthSession();
+  const { handleSyncAuthSession, isCheckingAuth } = useSyncAuthSession();
 
   useEffect(() => {
     handleSyncAuthSession();
-  }, [loginAction]);
-  return (
+  }, []);
+
+  return isCheckingAuth ? (
+    <img src="../src/assets/logo.png" className="h-screen w-screen flex justify-center items-center"/>
+  ) : (
     <div className="h-screen">
       <AppRoute />
       <Toaster />

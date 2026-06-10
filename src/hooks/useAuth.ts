@@ -1,72 +1,107 @@
-import { registerService, loginService, checkAuthSessionService } from "../services/auth";
+import {
+  registerService,
+  loginService,
+  getRefreshTokenService,
+  checkAuthSessionService
+} from "../services/auth";
 import type { RegisterInput, LoginInput } from "../schemas/authSchema";
 import { toast } from "sonner";
 import { useAuthStore } from "../stores/useAuthStore";
 import { extractErrorMsg } from "../utils/error";
+import { useState } from "react";
 
 export const useRegisterUser = () => {
-    const handleRegisterUser = async (data: RegisterInput) => {
-        const { confirmPassword: _confirmPassword, ...registerPayload } = data
-        void _confirmPassword
-        try {
-            await registerService(registerPayload)
-            toast.success("Register successfully", {
-                position: "bottom-left"
-            })
-        } catch (error) {
-            const errMsg = extractErrorMsg(error)
+  const handleRegisterUser = async (data: RegisterInput) => {
+    const { confirmPassword: _confirmPassword, ...registerPayload } = data;
+    void _confirmPassword;
+    try {
+      await registerService(registerPayload);
+      toast.success("Register successfully", {
+        position: "bottom-left",
+      });
+    } catch (error) {
+      const errMsg = extractErrorMsg(error);
 
-            toast.error(`Register failed: ${errMsg}`, {
-                position: "bottom-left"
-            });
-        }
+      toast.error(`Register failed: ${errMsg}`, {
+        position: "bottom-left",
+      });
     }
+  };
 
-    return {
-        handleRegisterUser
-    }
-}
+  return {
+    handleRegisterUser,
+  };
+};
 
 export const useLogin = () => {
-    const loginAction = useAuthStore((state) => state.login)
+  const { setAuth } = useAuthStore();
+  const handleLogin = async (data: LoginInput) => {
+    try {
+      const res = await loginService(data);
+      const user = res.data;
+      const accessToken = res.accessToken;
 
-    const handleLogin = async (data: LoginInput) => {
-        try {
-            const res = await loginService(data)
-            const user = res.data
-            loginAction(user)
+      if (!user) {
+        throw new Error("User not found");
+      }
 
-            toast.success(`Welcome back, ${user.userName}! `, {
-                position: "bottom-left"
-            })
-            return user
-        } catch (error) {
-            const errMsg = extractErrorMsg(error)
+      if (!accessToken) {
+        throw new Error("Access token not found");
+      }
 
-            toast.error("Login failed: " + errMsg, {
-                position: "bottom-left"
-            })
-            throw error
-        }
+      setAuth(user, accessToken);
+
+      toast.success(`Welcome back, ${user.userName}! `, {
+        position: "bottom-left",
+      });
+
+      return user;
+    } catch (error) {
+      const errMsg = extractErrorMsg(error);
+
+      toast.error("Login failed: " + errMsg, {
+        position: "bottom-left",
+      });
+      throw error;
     }
-    return { handleLogin }
-}
+  };
+
+  return { handleLogin };
+};
 
 export const useSyncAuthSession = () => {
-    const loginAction = useAuthStore((state) => state.login)
+  const { setAuth } = useAuthStore();
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true)
 
-    const handleSyncAuthSession = async () => {
-        try {
-            const res = await checkAuthSessionService()
-            const user = res.data
-            loginAction(user)
-        } catch (error) {
-            const errMsg = extractErrorMsg(error)
+  const handleSyncAuthSession = async () => {
+    try {
+      const refreshRes = await getRefreshTokenService();
 
-            toast.error(`Sync session failed: ${errMsg}`, {
-                position: "bottom-left"
-            });
-        }
+      if (!refreshRes.success || !refreshRes.accessToken) {
+        throw new Error("Session expired.");
+      }
+
+      const newAccessToken = refreshRes.accessToken;
+
+      const resSession = await checkAuthSessionService();
+      const user = resSession.data;
+
+      if (!resSession.success || !user) {
+        throw new Error("User not found");
+      }
+
+
+      setAuth(user, newAccessToken);
+    } catch (error) {
+      const errMsg = extractErrorMsg(error);
+
+      toast.error(`Sync session failed: ${errMsg}`, {
+        position: "bottom-left",
+      });
+    } finally {
+      setIsCheckingAuth(false)
     }
-    return { handleSyncAuthSession }
-}
+  };
+
+  return { isCheckingAuth, handleSyncAuthSession };
+};
