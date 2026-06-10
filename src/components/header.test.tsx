@@ -86,6 +86,7 @@ describe("When user is logged in", () => {
       user: {
         id: "1",
         userName: "user123",
+        isAdmin: false,
       },
       isLoggedIn: true,
     });

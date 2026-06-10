@@ -1,19 +1,19 @@
 import { create } from "zustand";
-
-interface UserProfile {
-    id: string;
-    userName: string;
-}
+import type { IUser } from "../services/auth";
 
 interface AuthState {
-    user: UserProfile | null
+    user: IUser | null
     isLoggedIn: boolean
-    login: (user: UserProfile) => void
+    accessToken: string | null
+    setAuth: (user: IUser, accessToken: string) => void
+    clearAuth: () => void
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
     user: null,
     isLoggedIn: false,
-    login: (user) => set({ user, isLoggedIn: true }),
+    accessToken: null,
+    setAuth: (user, accessToken) => set({ user, accessToken, isLoggedIn: true }),
+    clearAuth: () => set({ user: null, accessToken: null, isLoggedIn: false })
 }))
 

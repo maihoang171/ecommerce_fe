@@ -1,20 +1,42 @@
 import { axiosClient } from "./axios";
 
-interface IRegisterPayload {
-    userName: string;
-    password: string;
+interface IAuthPayload {
+  userName: string;
+  password: string;
 }
 
-export const registerService = async (payload: IRegisterPayload) => {
-    return await axiosClient.post("/auth/register", payload)
+export interface IUser {
+  id: string;
+  userName: string;
+  isAdmin: boolean;
 }
 
-export const loginService = async (payload: IRegisterPayload) => {
-    const res = await axiosClient.post("/auth/login", payload)
-    return res.data
+export interface ApiResponse<T> {
+  success: boolean;
+  message?: string;
+  data: T | null;
+  accessToken?: string;
 }
+
+export const registerService = async (payload: IAuthPayload) => {
+  const res = await axiosClient.post<ApiResponse<IUser>>(
+    "/auth/register",
+    payload,
+  );
+  return res.data;
+};
+
+export const loginService = async (payload: IAuthPayload) => {
+  const res = await axiosClient.post<ApiResponse<IUser>>("/auth/login", payload);
+  return res.data;
+};
 
 export const checkAuthSessionService = async () => {
-    const res = await axiosClient.get("/auth/me")
-    return res.data
-}
+  const res = await axiosClient.get<ApiResponse<IUser>>("/auth/me");
+  return res.data;
+};
+
+export const getRefreshTokenService = async () => {
+  const res = await axiosClient.get<ApiResponse<IUser>>("/auth/refresh-token");
+  return res.data;
+};
