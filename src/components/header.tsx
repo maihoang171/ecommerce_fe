@@ -1,89 +1,41 @@
-import { Link, NavLink } from "react-router-dom";
+import { Link } from "react-router-dom";
 import logo from "../assets/logo.png";
-import { User, Handbag, Search, Menu, X } from "lucide-react";
+import { User, Handbag, Search, X } from "lucide-react";
 import { Login } from "./login";
 import { Register } from "./register";
 import { useAuthModalStore } from "../stores/useAuthModeStore";
 import { useAuthStore } from "../stores/useAuthStore";
 import { getInitials } from "../utils/auth";
 import { useLogout } from "../hooks/useAuth";
+import { CategoryNav } from "./categoryNav";
 
 export const Header = () => {
   const { authMode, openLogin, close } = useAuthModalStore();
 
   const { user, isLoggedIn } = useAuthStore();
-
   const { handleLogout } = useLogout();
 
   const userInitial = getInitials(user?.userName ?? "");
   return (
     <>
-      <header className="w-full pl-4 pr-4">
+      <header className="w-full px-5 fixed top-0 z-50 bg-white">
         <nav
           aria-label="Main navigation"
-          className="grid grid-cols-3 h-20 md:h-24 items-center gap-2"
+          className="grid grid-cols-[45%_10%_45%] h-14 md:h-16 items-center gap-2"
         >
           {/* =========================================LEFT SECTION: CATEGORIES */}
-          {/* =======MOBILE ONLY: Dropdown Menu */}
-          <div className="dropdown md:hidden">
-            <button>
-              <Menu />
-            </button>
-
-            {/* TODO: add link to dropdown header*/}
-            <ul className="menu dropdown-content">
-              <li>
-                <NavLink to="/">Women</NavLink>
-              </li>
-              <li>
-                <NavLink to="/">Men</NavLink>
-              </li>
-              <li>
-                <NavLink to="/">Kid</NavLink>
-              </li>
-            </ul>
-          </div>
-
-          {/* =======DESKTOP ONLY: Tabs */}
-          <div className="hidden md:flex tabs tabs-border">
-            <input
-              type="radio"
-              name="my_tabs_2"
-              className="tab"
-              aria-label="Women"
-            />
-            <div className="tab-content border-base-300 bg-base-100 p-10 hidden">
-              Women
-            </div>
-
-            <input
-              type="radio"
-              name="my_tabs_2"
-              className="tab"
-              aria-label="Men"
-              defaultChecked
-            />
-            <div className="tab-content border-base-300 bg-base-100 p-10 hidden">
-              Men
-            </div>
-
-            <input
-              type="radio"
-              name="my_tabs_2"
-              className="tab"
-              aria-label="Kid"
-            />
-            <div className="tab-content border-base-300 bg-base-100 p-10 hidden">
-              Kid
-            </div>
-          </div>
+          <CategoryNav />
 
           {/* =========================================CENTER SECTION: LOGO */}
-          <div className="flex justify-center">
-            <Link to="" className="hover:text-gray-500 transition-colors">
+          <div className="flex justify-center relative h-full w-full">
+            <Link
+              to="/"
+              aria-label="XuXi E-commerce shop home"
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 hover:text-gray-500 transition-colors "
+            >
               <img
                 src={logo}
-                className="h-20 md:h-24 w-auto"
+                className="h-20 md:h-24 max-w-none w-auto"
                 alt="XuXi E-commerce shop home"
               />
             </Link>
@@ -92,7 +44,7 @@ export const Header = () => {
           {/* =========================================RIGHT SECTION: UTILITIES */}
           {/* TODO: handle search and shopping cart features */}
           <div>
-            <div className="flex flex-row items-center justify-end gap-2 md:gap-5">
+            <div className="flex flex-row items-center justify-end gap-2 md:gap-3">
               <Link
                 to=""
                 aria-label="Search products"

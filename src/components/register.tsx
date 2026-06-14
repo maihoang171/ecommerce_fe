@@ -92,7 +92,11 @@ export const Register = () => {
 
       <p className="text-center mt-2">
         Already have an account? Click{" "}
-        <button onClick={openLogin} className="text-primary link link-hover">
+        <button
+          type="button"
+          onClick={openLogin}
+          className="text-primary link link-hover lowercase"
+        >
           here
         </button>{" "}
         to login.

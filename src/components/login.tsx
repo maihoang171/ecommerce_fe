@@ -80,7 +80,11 @@ export const Login = () => {
       </form>
       <p className="text-center mt-2">
         Don't have an account? Register{" "}
-        <button onClick={openRegister} className="text-primary link link-hover">
+        <button
+          type="button"
+          onClick={openRegister}
+          className="text-primary link link-hover lowercase"
+        >
           here
         </button>
         .
