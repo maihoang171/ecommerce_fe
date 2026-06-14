@@ -11,6 +11,7 @@ import { useAuthStore } from "../stores/useAuthStore";
 import { extractErrorMsg } from "../utils/error";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { isAxiosError } from "axios";
 
 export const useRegisterUser = () => {
   const handleRegisterUser = async (data: RegisterInput) => {
@@ -19,13 +20,13 @@ export const useRegisterUser = () => {
     try {
       await registerService(registerPayload);
       toast.success("Register successfully", {
-        position: "bottom-left",
+        position: "bottom-right",
       });
     } catch (error) {
       const errMsg = extractErrorMsg(error);
 
       toast.error(`Register failed: ${errMsg}`, {
-        position: "bottom-left",
+        position: "bottom-right",
       });
     }
   };
@@ -54,7 +55,7 @@ export const useLogin = () => {
       setAuth(user, accessToken);
 
       toast.success(`Welcome back, ${user.userName}! `, {
-        position: "bottom-left",
+        position: "bottom-right",
       });
 
       return user;
@@ -62,7 +63,7 @@ export const useLogin = () => {
       const errMsg = extractErrorMsg(error);
 
       toast.error("Login failed: " + errMsg, {
-        position: "bottom-left",
+        position: "bottom-right",
       });
       throw error;
     }
@@ -94,10 +95,17 @@ export const useSyncAuthSession = () => {
 
       setAuth(user, newAccessToken);
     } catch (error) {
-      const errMsg = extractErrorMsg(error);
+      if (isAxiosError(error) && error.response?.status === 401) {
+        useAuthStore.getState().clearAuth();
 
+        setIsCheckingAuth(false);
+
+        return;
+      }
+
+      const errMsg = extractErrorMsg(error);
       toast.error(`Sync session failed: ${errMsg}`, {
-        position: "bottom-left",
+        position: "bottom-right",
       });
     } finally {
       setIsCheckingAuth(false);
@@ -117,7 +125,7 @@ export const useLogout = () => {
     if (!user) {
       clearAuth();
       toast.success("Session cleared. Logged out", {
-        position: "bottom-left",
+        position: "bottom-right",
       });
 
       navigate("/");
@@ -126,10 +134,11 @@ export const useLogout = () => {
 
     try {
       await logoutService(user.id);
+
       clearAuth();
 
       toast.success("Logout successfully", {
-        position: "bottom-left",
+        position: "bottom-right",
       });
 
       navigate("/");
@@ -140,7 +149,7 @@ export const useLogout = () => {
       clearAuth();
 
       toast.error("Server error, forced log out", {
-        position: "bottom-left",
+        position: "bottom-right",
       });
 
       navigate("/");

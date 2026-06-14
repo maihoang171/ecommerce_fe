@@ -17,6 +17,7 @@ import {
 } from "../services/auth";
 import { toast } from "sonner";
 import { useAuthStore } from "../stores/useAuthStore";
+import type { AxiosError } from "axios";
 
 const mockNavigate = vi.fn();
 vi.mock("react-router-dom", async () => {
@@ -86,7 +87,7 @@ describe("useRegisterUser Custom Hook", () => {
     });
 
     expect(mockToastSuccess).toHaveBeenCalledWith("Register successfully", {
-      position: "bottom-left",
+      position: "bottom-right",
     });
   });
 
@@ -101,7 +102,7 @@ describe("useRegisterUser Custom Hook", () => {
     expect(mockToastError).toHaveBeenCalledWith(
       `Register failed: ${err.message}`,
       {
-        position: "bottom-left",
+        position: "bottom-right",
       },
     );
   });
@@ -177,7 +178,7 @@ describe("useLogin Custom Hook", () => {
     expect(useAuthStore.getState().user).toEqual(mockUserData);
     expect(useAuthStore.getState().isLoggedIn).toBe(true);
     expect(mockToastSuccess).toHaveBeenCalledWith("Welcome back, user1! ", {
-      position: "bottom-left",
+      position: "bottom-right",
     });
   });
 
@@ -192,7 +193,7 @@ describe("useLogin Custom Hook", () => {
     expect(mockToastError).toHaveBeenCalledWith(
       `Login failed: ${err.message}`,
       {
-        position: "bottom-left",
+        position: "bottom-right",
       },
     );
   });
@@ -229,7 +230,7 @@ describe("useSyncAuthSession Custom Hook", () => {
     expect(mockToastError).toHaveBeenCalledWith(
       "Sync session failed: Session expired.",
       {
-        position: "bottom-left",
+        position: "bottom-right",
       },
     );
   });
@@ -249,7 +250,7 @@ describe("useSyncAuthSession Custom Hook", () => {
     expect(mockToastError).toHaveBeenCalledWith(
       "Sync session failed: Session expired.",
       {
-        position: "bottom-left",
+        position: "bottom-right",
       },
     );
   });
@@ -286,6 +287,25 @@ describe("useSyncAuthSession Custom Hook", () => {
     const { result } = renderHook(() => useSyncAuthSession());
 
     expect(result.current.handleSyncAuthSession()).resolves.toBeUndefined();
+  });
+
+  it("should clearAuth and setIsCheckingAuth false on error with status code 401", async () => {
+    const mockAxiosErr = {
+      isAxiosError: true,
+      response: {
+        status: 401,
+      },
+    } as AxiosError;
+
+    mockGetRefreshTokenService.mockRejectedValue(mockAxiosErr);
+
+    const { result } = renderHook(() => useSyncAuthSession());
+    expect(result.current.isCheckingAuth).toBe(true);
+
+    await result.current.handleSyncAuthSession();
+
+    expect(useAuthStore.getState().user).toBeNull();
+    expect(result.current.isCheckingAuth).toBe(false);
   });
 
   it("should setAuth on success", async () => {
@@ -340,7 +360,7 @@ describe("useLogout Custom Hook", () => {
     expect(mockToastSuccess).toHaveBeenCalledWith(
       "Session cleared. Logged out",
       {
-        position: "bottom-left",
+        position: "bottom-right",
       },
     );
     expect(mockNavigate).toHaveBeenCalledWith("/");
@@ -370,7 +390,7 @@ describe("useLogout Custom Hook", () => {
     expect(mockLogoutService).toHaveBeenCalledWith(mockUserData.id);
 
     expect(mockToastSuccess).toHaveBeenCalledWith("Logout successfully", {
-      position: "bottom-left",
+      position: "bottom-right",
     });
 
     expect(mockNavigate).toHaveBeenCalledWith("/");
@@ -392,7 +412,7 @@ describe("useLogout Custom Hook", () => {
     expect(mockToastError).toHaveBeenCalledWith(
       "Server error, forced log out",
       {
-        position: "bottom-left",
+        position: "bottom-right",
       },
     );
 
