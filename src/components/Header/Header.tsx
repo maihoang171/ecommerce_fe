@@ -1,13 +1,13 @@
 import { Link } from "react-router-dom";
-import logo from "../assets/logo.png";
+import logo from "@/assets/logo.png";
 import { User, Handbag, Search, X } from "lucide-react";
-import { Login } from "./login";
-import { Register } from "./register";
-import { useAuthModalStore } from "../stores/useAuthModeStore";
-import { useAuthStore } from "../stores/useAuthStore";
-import { getInitials } from "../utils/auth";
-import { useLogout } from "../hooks/useAuth";
-import { CategoryNav } from "./categoryNav";
+import { Login } from "../AuthModals/Login";
+import { Register } from "../AuthModals/Register";
+import { useAuthModalStore } from "@/stores/useAuthModelStore";
+import { useAuthStore } from "@/stores/useAuthStore";
+import { getInitials } from "@/utils/auth";
+import { useLogout } from "@/hooks/useAuth";
+import { CategoryNav } from "./CategoryNav";
 
 export const Header = () => {
   const { authMode, openLogin, close } = useAuthModalStore();
@@ -15,7 +15,7 @@ export const Header = () => {
   const { user, isLoggedIn } = useAuthStore();
   const { handleLogout } = useLogout();
 
-  const userInitial = getInitials(user?.userName ?? "");
+  const userInitial = getInitials(user?.username ?? "");
   return (
     <>
       <header className="w-full px-5 fixed top-0 z-50 bg-white">
@@ -27,7 +27,7 @@ export const Header = () => {
           <CategoryNav />
 
           {/* =========================================CENTER SECTION: LOGO */}
-          <div className="flex justify-center relative h-full w-full">
+          <div className="flex justify-center relative">
             <Link
               to="/"
               aria-label="XuXi E-commerce shop home"
@@ -83,7 +83,7 @@ export const Header = () => {
                     className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-40 p-2 shadow"
                   >
                     <li className="menu-title text-xs opacity-90">
-                      Hi, {user?.userName}
+                      Hi, {user?.username}
                     </li>
                     {/* TODO: add link to profile */}
                     <li>

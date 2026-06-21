@@ -1,62 +1,55 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { Home } from "./home";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
-import { useCategoryListStore } from "../stores/useCategoryStore";
+import { Home } from "./Home";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { render, screen } from "@testing-library/react";
+import { useCampaignStore } from "@/stores/useCampaignStore";
 
-vi.mock("../components/header.tsx", () => ({
-  Header: () => <div data-testid="header">Mock header</div>,
+vi.mock("@/components/Body/CampaignHeroBanner", () => ({
+  CampaignHeroBanner: () => (
+    <div data-testid="campaignHeroBanner">Mock CampaignHeroBanner</div>
+  ),
 }));
 
-vi.mock("../components/body.tsx", () => ({
-  Body: () => <div data-testid="body">Mock body</div>,
+vi.mock("@/stores/useCampaignStore", () => ({
+  useCampaignStore: vi.fn(),
 }));
 
-vi.mock("../stores/useCategoryStore", () => ({
-  useCategoryListStore: vi.fn(),
-}));
-
-describe("home component", () => {
-  const mockSetActiveCategory = vi.fn();
-
+describe("Home component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
-  afterEach(() => {
-    cleanup();
-  });
 
-  it("should render loading pulse when category list is empty", () => {
-    vi.mocked(useCategoryListStore).mockReturnValue({
-      categoryList: [],
-      clickedCategoryId: null,
-      setActiveCategory: mockSetActiveCategory,
+  it("should render message category list is empty", () => {
+    vi.mocked(useCampaignStore).mockReturnValue({
+      campaignList: [],
     });
-    const { container } = render(<Home />);
 
-    const pulseDiv = container.querySelector(".animate-pulse");
-    expect(pulseDiv).toBeInTheDocument();
-    expect(screen.queryByTestId("header")).toBeInTheDocument();
-    expect(screen.queryByTestId("body")).not.toBeInTheDocument();
-  });
-
-  it("should render header and body when category list is not empty", () => {
-    vi.mocked(useCategoryListStore).mockReturnValue({
-      categoryList: [
-        {
-          id: "1",
-          name: "Category 1",
-          children: [],
-          campaigns: [],
-        },
-      ],
-      clickedCategoryId: "1",
-      setActiveCategory: mockSetActiveCategory,
-    });
     render(<Home />);
 
-    expect(screen.queryByTestId("header")).toBeInTheDocument();
-    expect(screen.queryByTestId("body")).toBeInTheDocument();
+    expect(screen.getByText("Welcome to XuXi Clothes")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "We are currently updating our catalog. Check back soon!",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("should render campaign list when category list is not empty", () => {
+    vi.mocked(useCampaignStore).mockReturnValue({
+      campaignList: [
+        {
+          id: "1",
+          title: "title",
+          subTitle: "sub title",
+          imageUrl: "/imageUrl",
+          linkUrl: "/linkUrl",
+        },
+      ],
+    });
+
+    render(<Home />);
+
+    expect(screen.queryByTestId("campaignHeroBanner")).toBeInTheDocument();
   });
 });

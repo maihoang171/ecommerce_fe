@@ -1,23 +1,23 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { afterEach, beforeEach, describe, vi, it, expect } from "vitest";
-import { useLogin } from "../hooks/useAuth";
+import { useLogin } from "@/hooks/useAuth";
 import { screen, render, cleanup, waitFor } from "@testing-library/react";
-import { Login } from "./login";
+import { Login } from "./Login";
 import userEvent from "@testing-library/user-event";
 import {
   runPasswordTests,
-  runUserNameTests,
-} from "../utils/__test__/authHelpers";
+  runUsernameTests,
+} from "@/utils/__test__/authModalsTest";
 
-vi.mock("../hooks/useAuth", () => ({
+vi.mock("@/hooks/useAuth", () => ({
   useLogin: vi.fn(),
 }));
 
 const mockOpenRegister = vi.fn();
 const mockClose = vi.fn();
 
-vi.mock("../stores/useAuthModeStore", () => ({
+vi.mock("@/stores/useAuthModelStore", () => ({
   useAuthModalStore: () => ({
     openRegister: mockOpenRegister,
     close: mockClose,
@@ -48,7 +48,7 @@ describe("Login component validation and submission", () => {
     expect(screen.getByRole("button", { name: "here" }));
   });
 
-  runUserNameTests(() => render(<Login />));
+  runUsernameTests(() => render(<Login />));
 
   runPasswordTests(() => render(<Login />));
 

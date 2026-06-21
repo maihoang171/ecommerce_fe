@@ -1,32 +1,34 @@
-import { Header } from "../components/header";
-import { useCategoryListStore } from "../stores/useCategoryStore";
-import { Body } from "../components/body";
 import { useEffect } from "react";
+import { CampaignHeroBanner } from "@/components/Body/CampaignHeroBanner";
+import { useCampaignStore } from "@/stores/useCampaignStore";
+import { useGetCampaignList } from "@/hooks/useCampaign";
 
 export const Home = () => {
-  const { categoryList, clickedCategoryId, setActiveCategory } =
-    useCategoryListStore();
-
-  const currentActiveCategory =
-    categoryList.find((c) => c.id === clickedCategoryId) || categoryList[0];
+  const { campaignList } = useCampaignStore();
+  const { handleGetCampaignList } = useGetCampaignList();
 
   useEffect(() => {
-    setActiveCategory(currentActiveCategory);
-  }, [currentActiveCategory, setActiveCategory]);
+    handleGetCampaignList();
+  }, []);
 
-  if (!currentActiveCategory) {
+  if (campaignList.length > 0) {
     return (
-      <div className="w-full min-h-screen bg-base-100 flex flex-col">
-        <Header />
-        <div className="flex-1 w-full bg-base-200 animate-pulse" />
+      <div className="hero-banner-container">
+        {campaignList.map((c) => (
+          <div key={c.id}>
+            <CampaignHeroBanner campaign={c} />
+          </div>
+        ))}
       </div>
     );
   }
 
   return (
-    <div className="w-full min-h-screen bg-base-100">
-      <Header />
-      <Body />
+    <div className="w-full min-h-[70vh] flex flex-col justify-center items-center bg-base-100">
+      <h2 className="text-2xl font-bold">Welcome to XuXi Clothes</h2>
+      <p className="text-gray-500 mt-2">
+        We are currently updating our catalog. Check back soon!
+      </p>
     </div>
   );
 };
