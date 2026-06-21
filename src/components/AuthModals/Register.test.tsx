@@ -1,22 +1,22 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { describe, it, vi, beforeEach, expect, afterEach } from "vitest";
-import { useRegisterUser } from "../hooks/useAuth";
+import { useRegisterUser } from "@/hooks/useAuth";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
-import { Register } from "./register";
+import { Register } from "./Register";
 import userEvent from "@testing-library/user-event";
 import {
   runPasswordTests,
-  runUserNameTests,
-} from "../utils/__test__/authHelpers";
+  runUsernameTests,
+} from "@/utils/__test__/authModalsTest";
 
-vi.mock("../hooks/useAuth", () => ({
+vi.mock("@/hooks/useAuth", () => ({
   useRegisterUser: vi.fn(),
 }));
 
 const mockOpenLogin = vi.fn();
 const mockClose = vi.fn();
-vi.mock("../stores/useAuthModeStore", () => ({
+vi.mock("@/stores/useAuthModelStore", () => ({
   useAuthModalStore: () => ({
     openLogin: mockOpenLogin,
     close: mockClose,
@@ -48,7 +48,7 @@ describe("register component validation and submission", () => {
     ).toBeInTheDocument();
   });
 
-  runUserNameTests(() => render(<Register />));
+  runUsernameTests(() => render(<Register />));
 
   runPasswordTests(() => render(<Register />));
 

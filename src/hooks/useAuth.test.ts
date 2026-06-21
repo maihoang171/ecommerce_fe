@@ -60,7 +60,7 @@ describe("useRegisterUser Custom Hook", () => {
   });
 
   const validInput = {
-    userName: "user1",
+    username: "user1",
     password: "User1234@",
     confirmPassword: "User1234@",
   };
@@ -70,7 +70,7 @@ describe("useRegisterUser Custom Hook", () => {
       success: true,
       data: {
         id: "1",
-        userName: "user1",
+        username: "user1",
         isAdmin: false,
       },
     };
@@ -82,7 +82,7 @@ describe("useRegisterUser Custom Hook", () => {
     await result.current.handleRegisterUser(validInput);
 
     expect(mockRegisterService).toHaveBeenCalledWith({
-      userName: "user1",
+      username: "user1",
       password: "User1234@",
     });
 
@@ -124,13 +124,13 @@ describe("useLogin Custom Hook", () => {
   });
 
   const validInput = {
-    userName: "user1",
+    username: "user1",
     password: "User1234@",
   };
 
   const mockUserData = {
     id: "1",
-    userName: "user1",
+    username: "user1",
     isAdmin: false,
   };
 
@@ -144,7 +144,7 @@ describe("useLogin Custom Hook", () => {
     const { result } = renderHook(() => useLogin());
 
     await expect(result.current.handleLogin(validInput)).rejects.toThrow(
-      "User not found",
+      "Invalid username or password",
     );
   });
 
@@ -318,7 +318,7 @@ describe("useSyncAuthSession Custom Hook", () => {
 
     const mockUserData = {
       id: "1",
-      userName: "user1",
+      username: "user1",
       isAdmin: false,
     };
 
@@ -342,6 +342,7 @@ describe("useLogout Custom Hook", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
+
   afterEach(() => {
     cleanup();
   });
@@ -368,9 +369,10 @@ describe("useLogout Custom Hook", () => {
 
   const mockUserData = {
     id: "1",
-    userName: "user1",
+    username: "user1",
     isAdmin: false,
   };
+
   it("should toast logout successfully and navigate to homepage '/' on success", async () => {
     useAuthStore.setState({
       user: mockUserData,
@@ -409,12 +411,9 @@ describe("useLogout Custom Hook", () => {
 
     await result.current.handleLogout();
 
-    expect(mockToastError).toHaveBeenCalledWith(
-      "Server error, forced log out",
-      {
-        position: "bottom-right",
-      },
-    );
+    expect(mockToastError).toHaveBeenCalledWith("Server error, forced logout", {
+      position: "bottom-right",
+    });
 
     expect(mockNavigate).toHaveBeenCalledWith("/");
   });

@@ -1,20 +1,22 @@
 import { create } from "zustand";
-import type { IParentCategory } from "../services/auth";
+import type { IParentCategory } from "../services/category";
 
-interface CategoryListState {
+interface CategoryState {
   categoryList: IParentCategory[];
   setCategoryList: (categoryList: IParentCategory[]) => void;
-  activeCategory: IParentCategory | null;
+  activeCategory: IParentCategory | undefined;
   setActiveCategory: (category: IParentCategory) => void;
-  clickedCategoryId: string | null;
-  setClickedCategoryId: (categoryId: string | null) => void;
 }
 
-export const useCategoryListStore = create<CategoryListState>((set) => ({
+export const useCategoryStore = create<CategoryState>((set) => ({
   categoryList: [],
-  setCategoryList: (categoryList) => set({ categoryList }),
-  activeCategory: null,
+  activeCategory: undefined,
+
+  setCategoryList: (categoryList) =>
+    set((state) => ({
+      categoryList,
+      activeCategory: state.activeCategory || categoryList[0],
+    })),
+
   setActiveCategory: (category) => set({ activeCategory: category }),
-  clickedCategoryId: null,
-  setClickedCategoryId: (categoryId) => set({ clickedCategoryId: categoryId }),
 }));

@@ -2,11 +2,11 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, it, vi, expect } from "vitest";
-import { Header } from "./header";
+import { Header } from "./Header";
 import { MemoryRouter } from "react-router-dom";
 import userEvent from "@testing-library/user-event";
-import { useAuthStore } from "../stores/useAuthStore";
-import { useAuthModalStore } from "../stores/useAuthModeStore";
+import { useAuthStore } from "@/stores/useAuthStore";
+import { useAuthModalStore } from "@/stores/useAuthModelStore";
 
 const renderHeader = () => {
   const renderResult = render(
@@ -85,7 +85,7 @@ describe("When user is logged in", () => {
     useAuthStore.setState({
       user: {
         id: "1",
-        userName: "user123",
+        username: "user123",
         isAdmin: false,
       },
       isLoggedIn: true,

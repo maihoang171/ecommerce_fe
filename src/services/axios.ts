@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useAuthStore } from "../stores/useAuthStore";
-import type { ApiResponse, IUser } from "./auth";
+import type { IUser } from "./auth";
+import type { ApiResponse } from "./type";
 
 export const axiosClient = axios.create({
   timeout: 60000,
@@ -18,6 +19,14 @@ axiosClient.interceptors.response.use(
   (res) => res,
   async (error) => {
     const originalReq = error.config;
+
+    if (
+      originalReq.url.includes("/auth/login") ||
+      originalReq.url.includes("/auth/register")
+    ) {
+      return Promise.reject(error);
+    }
+
     if (error.response?.status === 401 && !originalReq._retry) {
       originalReq._retry = true;
 
@@ -46,3 +55,11 @@ axiosClient.interceptors.response.use(
     return Promise.reject(error);
   },
 );
+
+axiosClient.interceptors.request.use((config) => {
+  const token = useAuthStore.getState().accessToken;
+
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+
+  return config;
+});

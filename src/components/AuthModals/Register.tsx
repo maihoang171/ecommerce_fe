@@ -1,8 +1,8 @@
 import { useForm } from "react-hook-form";
-import { registerSchema, type RegisterInput } from "../schemas/authSchema";
+import { registerSchema, type RegisterInput } from "@/schemas/authSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useAuthModalStore } from "../stores/useAuthModeStore";
-import { useRegisterUser } from "../hooks/useAuth";
+import { useAuthModalStore } from "@/stores/useAuthModelStore";
+import { useRegisterUser } from "@/hooks/useAuth";
 
 export const Register = () => {
   const {
@@ -32,15 +32,15 @@ export const Register = () => {
       >
         <fieldset>
           <input
-            id="userName"
+            id="username"
             type="text"
             placeholder="Username"
-            className={`input w-full ${errors.userName ? "input-error" : ""}`}
-            {...register("userName")}
+            className={`input w-full ${errors.username ? "input-error" : ""}`}
+            {...register("username")}
           />
-          {errors.userName && (
+          {errors.username && (
             <span className="error-message text-red-500 text-xs flex flex-col gap-1 mt-1 text-left">
-              • {errors.userName.message}
+              • {errors.username.message}
             </span>
           )}
         </fieldset>

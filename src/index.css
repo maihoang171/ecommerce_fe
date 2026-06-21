@@ -9,15 +9,7 @@
   }
 }
 
-h1,
-h2,
-h3,
-header,
-a,
-button,
-span {
-  text-transform: uppercase;
-}
+
 
 input,
 textarea,

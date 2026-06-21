@@ -1,13 +1,14 @@
-import { isAxiosError } from "axios"
+import { isAxiosError } from "axios";
 
 export const extractErrorMsg = (error: unknown): string => {
-    let errMsg = "Something went wrong"
+  let errMsg = "Something went wrong";
 
-    if (isAxiosError(error)) {
-        errMsg = error.response?.data?.message || errMsg
-    } else if (error instanceof Error) {
-        errMsg = error.message
-    }
+  if (isAxiosError(error)) {
+    console.log(error);
+    errMsg = error.response?.data?.message || errMsg;
+  } else if (error instanceof Error) {
+    errMsg = error.message;
+  }
 
-    return errMsg
-}
+  return errMsg;
+};

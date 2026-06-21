@@ -1,26 +1,15 @@
 import { useEffect } from "react";
 import { useSyncAuthSession } from "./hooks/useAuth";
-import { AppRoute } from "./routes/route";
+import { AppRoute } from "./routes/AppRoute";
 import "./index.css";
 import { Toaster } from "sonner";
-import { useGetCategoryList } from "./hooks/useCategory";
 import logo from "./assets/logo.png";
 
 function App() {
   const { handleSyncAuthSession, isCheckingAuth } = useSyncAuthSession();
-  const { handleGetCategoryList } = useGetCategoryList();
 
   useEffect(() => {
-    const initApp = async () => {
-      try {
-        await handleSyncAuthSession();
-
-        await handleGetCategoryList();
-      } catch (error) {
-        console.log("Error occurred when initializing app: ", error);
-      }
-    };
-    initApp();
+    handleSyncAuthSession();
   }, []);
 
   return isCheckingAuth ? (

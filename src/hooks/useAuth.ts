@@ -45,7 +45,7 @@ export const useLogin = () => {
       const accessToken = res.accessToken;
 
       if (!user) {
-        throw new Error("User not found");
+        throw new Error("Invalid username or password");
       }
 
       if (!accessToken) {
@@ -54,7 +54,7 @@ export const useLogin = () => {
 
       setAuth(user, accessToken);
 
-      toast.success(`Welcome back, ${user.userName}! `, {
+      toast.success(`Welcome back, ${user.username}! `, {
         position: "bottom-right",
       });
 
@@ -148,7 +148,7 @@ export const useLogout = () => {
 
       clearAuth();
 
-      toast.error("Server error, forced log out", {
+      toast.error("Server error, forced logout", {
         position: "bottom-right",
       });
 

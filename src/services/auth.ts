@@ -1,41 +1,15 @@
 import { axiosClient } from "./axios";
+import type { ApiResponse } from "./type";
 
 interface IAuthPayload {
-  userName: string;
+  username: string;
   password: string;
 }
 
 export interface IUser {
   id: string;
-  userName: string;
+  username: string;
   isAdmin: boolean;
-}
-
-export interface ApiResponse<T> {
-  success: boolean;
-  message?: string;
-  data: T | null;
-  accessToken?: string;
-}
-
-export interface ICategory {
-  id: string;
-  name: string;
-  slug: string;
-  imageUrl: string;
-}
-export interface ICampaign {
-  id: string;
-  title: string;
-  subTitle: string;
-  imageUrl: string;
-  linkUrl: string;
-}
-
-export interface IParentCategory extends ICategory {
-  children: ICategory[];
-  parentId: string | null;
-  campaigns: ICampaign[];
 }
 
 export const registerService = async (payload: IAuthPayload) => {
@@ -65,12 +39,8 @@ export const getRefreshTokenService = async () => {
 };
 
 export const logoutService = async (userId: string) => {
-  const res = await axiosClient.post<ApiResponse<null>>("/auth/logout", userId);
-  return res.data;
-};
-
-export const getCategoryListService = async () => {
-  const res =
-    await axiosClient.get<ApiResponse<IParentCategory[]>>("/category");
+  const res = await axiosClient.post<ApiResponse<null>>("/auth/logout", {
+    userId,
+  });
   return res.data;
 };
