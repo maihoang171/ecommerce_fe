@@ -12,7 +12,6 @@ export const ProductList = () => {
   const { handleGetProductList } = useGetProductList();
 
   const { parentSlug, childSlug } = useParams();
-
   const {
     categoryList,
     activeParentCategory,
@@ -35,21 +34,23 @@ export const ProductList = () => {
 
     handleGetProductList(parentSlug, childSlug);
 
-    const parent = categoryList.find((c) => c.slug === parentSlug);
+    if (categoryList.length > 0) {
+      const parent = categoryList.find((c) => c.slug === parentSlug);
 
-    if (!parent) {
-      navigate("/not-found", { replace: true });
-      return;
-    }
+      if (!parent) {
+        navigate("/not-found", { replace: true });
+        return;
+      }
 
-    setActiveParentCategory(parent);
+      setActiveParentCategory(parent);
 
-    const child = parent?.children.find((c) => c.slug === childSlug);
-    setActiveChildCategory(child);
+      const child = parent?.children.find((c) => c.slug === childSlug);
+      setActiveChildCategory(child);
 
-    if (!childSlug || !child) {
-      navigate("/not-found", { replace: true });
-      return;
+      if (!childSlug || !child) {
+        navigate("/not-found", { replace: true });
+        return;
+      }
     }
   }, [childSlug, parentSlug, categoryList]);
 
