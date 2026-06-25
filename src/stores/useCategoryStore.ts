@@ -1,22 +1,28 @@
 import { create } from "zustand";
-import type { IParentCategory } from "../services/category";
+import type { IParentCategory, ICategory } from "../services/category";
 
 interface CategoryState {
   categoryList: IParentCategory[];
   setCategoryList: (categoryList: IParentCategory[]) => void;
-  activeCategory: IParentCategory | undefined;
-  setActiveCategory: (category: IParentCategory) => void;
+  activeParentCategory: IParentCategory | undefined;
+  setActiveParentCategory: (category: IParentCategory) => void;
+  activeChildCategory: ICategory | undefined;
+  setActiveChildCategory: (category: ICategory | undefined) => void;
 }
 
 export const useCategoryStore = create<CategoryState>((set) => ({
   categoryList: [],
-  activeCategory: undefined,
+  activeParentCategory: undefined,
+  activeChildCategory: undefined,
 
   setCategoryList: (categoryList) =>
     set((state) => ({
       categoryList,
-      activeCategory: state.activeCategory || categoryList[0],
+      activeParentCategory: state.activeParentCategory || categoryList[0],
     })),
 
-  setActiveCategory: (category) => set({ activeCategory: category }),
+  setActiveParentCategory: (category) =>
+    set({ activeParentCategory: category }),
+
+  setActiveChildCategory: (category) => set({ activeChildCategory: category }),
 }));

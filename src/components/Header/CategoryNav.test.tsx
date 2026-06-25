@@ -1,12 +1,13 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { afterEach, beforeEach, describe, vi, it, expect } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { CategoryNav } from "../Header/CategoryNav";
 import { useCategoryStore } from "@/stores/useCategoryStore";
 import userEvent from "@testing-library/user-event";
 import { useGetCategoryList } from "@/hooks/useCategory";
+import { mockCategoryList } from "@/tests/mock/mockData";
 
 vi.mock("@/stores/useCategoryStore", () => ({
   useCategoryStore: vi.fn(),
@@ -26,25 +27,8 @@ vi.mock("react-router-dom", async () => {
 });
 
 describe("categoryNav component", () => {
-  const mockSetActiveCategory = vi.fn();
-  const mockHandleGetCategoryList = vi.fn();
-
-  const mockCategoryList = [
-    {
-      id: "1",
-      name: "WOMEN",
-      slug: "women",
-      children: [{ id: "101", name: "Dresses", slug: "dresses" }],
-      campaigns: [{ id: "1", title: "Summer Look book", linkUrl: "/summer" }],
-    },
-    {
-      id: "2",
-      name: "MEN",
-      slug: "men",
-      children: [{ id: "201", name: "Shirts", slug: "shirts" }],
-      campaigns: [],
-    },
-  ];
+  const mockSetActiveParentCategory = vi.fn();
+  const mockSetActiveChildCategory = vi.fn();
 
   const setup = () => {
     const user = userEvent.setup();
@@ -68,13 +52,14 @@ describe("categoryNav component", () => {
     vi.clearAllMocks();
 
     vi.mocked(useGetCategoryList).mockReturnValue({
-      handleGetCategoryList: mockHandleGetCategoryList,
+      handleGetCategoryList: vi.fn(),
     });
 
     vi.mocked(useCategoryStore).mockReturnValue({
       categoryList: mockCategoryList,
-      activeCategory: mockCategoryList[0],
-      setActiveCategory: mockSetActiveCategory,
+      activeParentCategory: mockCategoryList[0],
+      setActiveParentCategory: mockSetActiveParentCategory,
+      setActiveChildCategory: mockSetActiveChildCategory,
     });
   });
 
@@ -83,20 +68,36 @@ describe("categoryNav component", () => {
   });
 
   describe("mobile only", () => {
-    it("should set active category on click", async () => {
+    it("should set active parent category on click and navigate to the category page", async () => {
       const { user, getOpenMenuBtn, getWomenBtns, getMenBtns } = setup();
 
       await user.click(getOpenMenuBtn());
 
-      const mobileWomenBtn = getWomenBtns()[0];
-      expect(mobileWomenBtn.className).toContain("text-black");
+      const womenBtn = getWomenBtns()[0];
+      expect(womenBtn.className).toContain("text-black");
 
-      const mobileMenBtn = getMenBtns()[0];
-      expect(mobileMenBtn.className).toContain("text-gray-500");
+      const menBtn = getMenBtns()[0];
+      expect(menBtn.className).toContain("text-gray-500");
 
-      await user.click(mobileMenBtn);
+      await user.click(menBtn);
 
-      expect(mockSetActiveCategory).toHaveBeenCalledWith(mockCategoryList[1]);
+      expect(mockSetActiveParentCategory).toHaveBeenCalledWith(
+        mockCategoryList[1],
+      );
+
+      expect(mockNavigate).toHaveBeenCalledWith("/men");
+    });
+
+    it("should set active child category on click and navigate to product list page", async () => {
+      const { user, getOpenMenuBtn } = setup();
+
+      await user.click(getOpenMenuBtn());
+
+      const childLink = screen.getAllByRole("button", { name: /Dresses/i })[0];
+
+      await user.click(childLink);
+
+      expect(mockNavigate).toHaveBeenCalledWith("/women/dresses");
     });
 
     it("should render campaigns and children links for the active category", async () => {
@@ -105,13 +106,13 @@ describe("categoryNav component", () => {
       await user.click(getOpenMenuBtn());
 
       const campaignLink = screen.getAllByRole("link", {
-        name: /Summer Look book/i,
+        name: /Summer Lookbook/i,
       });
 
       expect(campaignLink[0]).toBeInTheDocument();
-      expect(campaignLink[0]).toHaveAttribute("href", "/summer");
+      expect(campaignLink[0]).toHaveAttribute("href", "/campaigns/summer");
 
-      const childrenLinks = screen.getAllByRole("link", { name: "Dresses" });
+      const childrenLinks = screen.getAllByRole("button", { name: "Dresses" });
       expect(childrenLinks.length).toBeGreaterThan(0);
     });
 
@@ -124,7 +125,7 @@ describe("categoryNav component", () => {
       expect(getCloseMenuBtn()).toBeInTheDocument();
 
       const campaignLink = screen.getAllByRole("link", {
-        name: /Summer Look book/i,
+        name: /Summer Lookbook/i,
       })[0];
       await user.click(campaignLink);
 
@@ -134,7 +135,7 @@ describe("categoryNav component", () => {
       await user.click(getOpenMenuBtn());
       expect(getCloseMenuBtn()).toBeInTheDocument();
 
-      const childLink = screen.getAllByRole("link", { name: /Dresses/i })[0];
+      const childLink = screen.getAllByRole("button", { name: /Dresses/i })[0];
       await user.click(childLink);
 
       expect(getOpenMenuBtn()).toBeInTheDocument();
@@ -142,13 +143,27 @@ describe("categoryNav component", () => {
   });
 
   describe("desktop only", () => {
-    it("should set active category on click", async () => {
+    it("should set active category on click and navigate to the specific page", async () => {
       const { user, getMenBtns } = setup();
 
-      await user.click(getMenBtns()[1]);
+      const menBtn = getMenBtns()[1];
+      expect(menBtn.className).toContain("text-gray-400");
 
-      expect(mockSetActiveCategory).toHaveBeenCalledWith(mockCategoryList[1]);
-      expect(mockNavigate).toHaveBeenCalledWith("/category/men");
+      await user.click(menBtn);
+
+      expect(mockSetActiveParentCategory).toHaveBeenCalledWith(
+        mockCategoryList[1],
+      );
+      expect(mockNavigate).toHaveBeenCalledWith("/men");
+
+      //test user click child category link
+      await user.hover(menBtn);
+
+      const childLink = screen.getAllByRole("button", { name: /Shirts/i })[1];
+
+      fireEvent.click(childLink);
+
+      expect(mockNavigate).toHaveBeenCalledWith("/men/shirts");
     });
 
     it("should clear hoverSlug on mouse leave", async () => {

@@ -18,6 +18,10 @@ import {
 import { toast } from "sonner";
 import { useAuthStore } from "../stores/useAuthStore";
 import type { AxiosError } from "axios";
+import {
+  mockValidUserDataInput,
+  mockAuthSuccessResponse,
+} from "@/tests/mock/mockResponse";
 
 const mockNavigate = vi.fn();
 vi.mock("react-router-dom", async () => {
@@ -60,31 +64,18 @@ describe("useRegisterUser Custom Hook", () => {
   });
 
   const validInput = {
-    username: "user1",
-    password: "User1234@",
-    confirmPassword: "User1234@",
+    ...mockValidUserDataInput,
+    confirmPassword: mockValidUserDataInput.password,
   };
 
   it("should strip confirmPassword and call registerService with correct payload on success", async () => {
-    const mockResponse = {
-      success: true,
-      data: {
-        id: "1",
-        username: "user1",
-        isAdmin: false,
-      },
-    };
-
-    mockRegisterService.mockResolvedValue(mockResponse);
+    mockRegisterService.mockResolvedValue(mockAuthSuccessResponse);
 
     const { result } = renderHook(() => useRegisterUser());
 
     await result.current.handleRegisterUser(validInput);
 
-    expect(mockRegisterService).toHaveBeenCalledWith({
-      username: "user1",
-      password: "User1234@",
-    });
+    expect(mockRegisterService).toHaveBeenCalledWith(mockValidUserDataInput);
 
     expect(mockToastSuccess).toHaveBeenCalledWith("Register successfully", {
       position: "bottom-right",
@@ -123,63 +114,51 @@ describe("useLogin Custom Hook", () => {
     cleanup();
   });
 
-  const validInput = {
-    username: "user1",
-    password: "User1234@",
-  };
-
-  const mockUserData = {
-    id: "1",
-    username: "user1",
-    isAdmin: false,
-  };
-
   it("should throw error if user not found", async () => {
     mockLoginService.mockResolvedValue({
-      success: true,
-      accessToken: "mockAccessToken",
+      ...mockAuthSuccessResponse,
       data: null,
     });
 
     const { result } = renderHook(() => useLogin());
 
-    await expect(result.current.handleLogin(validInput)).rejects.toThrow(
-      "Invalid username or password",
-    );
+    await expect(
+      result.current.handleLogin(mockValidUserDataInput),
+    ).rejects.toThrow("Invalid username or password");
   });
 
   it("should throw error if access token not found", async () => {
     mockLoginService.mockResolvedValue({
-      success: true,
+      ...mockAuthSuccessResponse,
       accessToken: undefined,
-      data: mockUserData,
     });
 
     const { result } = renderHook(() => useLogin());
 
-    await expect(result.current.handleLogin(validInput)).rejects.toThrow(
-      "Access token not found",
-    );
+    await expect(
+      result.current.handleLogin(mockValidUserDataInput),
+    ).rejects.toThrow("Access token not found");
   });
 
   it("should sync user data to Zustand store and trigger success toast on success", async () => {
-    mockLoginService.mockResolvedValue({
-      success: true,
-      accessToken: "mockAccessToken",
-      data: mockUserData,
-    });
+    mockLoginService.mockResolvedValue(mockAuthSuccessResponse);
 
     const { result } = renderHook(() => useLogin());
 
-    const returnedUser = await result.current.handleLogin(validInput);
+    const returnedUser = await result.current.handleLogin(
+      mockValidUserDataInput,
+    );
 
-    expect(mockLoginService).toHaveBeenCalledWith(validInput);
-    expect(returnedUser).toEqual(mockUserData);
-    expect(useAuthStore.getState().user).toEqual(mockUserData);
+    expect(mockLoginService).toHaveBeenCalledWith(mockValidUserDataInput);
+    expect(returnedUser).toEqual(mockAuthSuccessResponse.data);
+    expect(useAuthStore.getState().user).toEqual(mockAuthSuccessResponse.data);
     expect(useAuthStore.getState().isLoggedIn).toBe(true);
-    expect(mockToastSuccess).toHaveBeenCalledWith("Welcome back, user1! ", {
-      position: "bottom-right",
-    });
+    expect(mockToastSuccess).toHaveBeenCalledWith(
+      `Welcome back, ${mockAuthSuccessResponse.data.username}!`,
+      {
+        position: "bottom-right",
+      },
+    );
   });
 
   it("should trigger error toast on failure", async () => {
@@ -188,7 +167,9 @@ describe("useLogin Custom Hook", () => {
 
     const { result } = renderHook(() => useLogin());
 
-    await expect(result.current.handleLogin(validInput)).rejects.toThrow();
+    await expect(
+      result.current.handleLogin(mockValidUserDataInput),
+    ).rejects.toThrow();
 
     expect(mockToastError).toHaveBeenCalledWith(
       `Login failed: ${err.message}`,

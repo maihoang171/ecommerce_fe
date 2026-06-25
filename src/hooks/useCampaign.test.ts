@@ -6,6 +6,7 @@ import { useGetCampaignList } from "./useCampaign";
 import { renderHook, act } from "@testing-library/react";
 import { extractErrorMsg } from "@/utils/error";
 import { toast } from "sonner";
+import { mockCampaignListResponse } from "@/tests/mock/mockResponse";
 
 vi.mock("@/hooks/userCampaignStore", () => ({
   setCampaignList: vi.fn(),
@@ -41,33 +42,20 @@ describe("useGetCampaignList", () => {
   });
 
   it("should get campaign list from API and set into campaign store", async () => {
-    const mockRes = {
-      success: true,
-      data: [
-        {
-          id: "1",
-          title: "title",
-          subTitle: "subTitle",
-          imageUrl: "imageUrl",
-          linkUrl: "linkUrl",
-        },
-      ],
-    };
-
-    vi.mocked(getCampaignListService).mockResolvedValue(mockRes);
+    vi.mocked(getCampaignListService).mockResolvedValue(mockCampaignListResponse);
 
     const { result } = renderHook(() => useGetCampaignList());
     await act(async () => {
       await result.current.handleGetCampaignList();
     });
 
-    expect(mockSetCampaignList).toHaveBeenCalledWith(mockRes.data);
+    expect(mockSetCampaignList).toHaveBeenCalledWith(mockCampaignListResponse.data);
   });
 
   it("should fallback to an empty array when API return no data", async () => {
     const mockRes = {
-      success: true,
-      data: null,
+      ...mockCampaignListResponse,
+      data: null
     };
 
     vi.mocked(getCampaignListService).mockResolvedValue(mockRes);

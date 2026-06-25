@@ -18,10 +18,10 @@ export const Header = () => {
   const userInitial = getInitials(user?.username ?? "");
   return (
     <>
-      <header className="w-full px-5 fixed top-0 z-50 bg-white">
+      <header className="w-full fixed top-0 z-50 bg-white">
         <nav
           aria-label="Main navigation"
-          className="grid grid-cols-[45%_10%_45%] h-14 md:h-16 items-center gap-2"
+          className="grid grid-cols-[1fr_auto_1fr] h-14 md:h-16 items-center gap-2 px-5"
         >
           {/* =========================================LEFT SECTION: CATEGORIES */}
           <CategoryNav />
