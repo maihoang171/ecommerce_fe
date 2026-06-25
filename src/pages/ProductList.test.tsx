@@ -15,7 +15,7 @@ vi.mock("@/stores/useProductStore", () => ({
 
 vi.mock("@/hooks/useProduct", () => ({
   useGetProductList: vi.fn(() => ({
-    handleGetProductList: vi.fn()
+    handleGetProductList: vi.fn(),
   })),
 }));
 
@@ -115,7 +115,9 @@ describe("ProductList", () => {
   });
 
   it("should set active child category and navigate to exact link on click", async () => {
-    vi.mocked(useProductStore).mockReturnValue({ productList: mockProductList });
+    vi.mocked(useProductStore).mockReturnValue({
+      productList: mockProductList,
+    });
 
     vi.mocked(mockUseParams).mockReturnValue({
       parentSlug: "women",
@@ -149,7 +151,9 @@ describe("ProductList", () => {
   });
 
   it("should render all elements and proper product list on success", () => {
-    vi.mocked(useProductStore).mockReturnValue({productList: mockProductList });
+    vi.mocked(useProductStore).mockReturnValue({
+      productList: mockProductList,
+    });
 
     vi.mocked(mockUseParams).mockReturnValue({
       parentSlug: "women",
@@ -174,5 +178,31 @@ describe("ProductList", () => {
     expect(screen.getAllByTestId("mock-product-detail-component")).toHaveLength(
       2,
     );
+  });
+
+  it("should do nothing when the category length equal 0", () => {
+    vi.mocked(useProductStore).mockReturnValue({ productList: [] });
+
+    vi.mocked(mockUseParams).mockReturnValue({
+      parentSlug: "women",
+      childSlug: "dresses",
+    });
+
+    const mockSetActiveParentCategory = vi.fn()
+    vi.mocked(useCategoryStore).mockReturnValue({
+      categoryList: [],
+      activeParentCategory: undefined,
+      activeChildCategory: undefined,
+      setActiveChildCategory: vi.fn(),
+      setActiveParentCategory: mockSetActiveParentCategory,
+    });
+
+    render(
+      <MemoryRouter>
+        <ProductList />
+      </MemoryRouter>,
+    );
+
+    expect(mockSetActiveParentCategory).not.toHaveBeenCalled()
   });
 });
