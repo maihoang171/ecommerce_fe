@@ -54,7 +54,7 @@ export const useLogin = () => {
 
       setAuth(user, accessToken);
 
-      toast.success(`Welcome back, ${user.username}! `, {
+      toast.success(`Welcome back, ${user.username}!`, {
         position: "bottom-right",
       });
 

@@ -4,16 +4,28 @@ import { Home } from "./Home";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { useCampaignStore } from "@/stores/useCampaignStore";
+import { useGetCampaignList } from "@/hooks/useCampaign";
+import { mockCategoryList } from "@/tests/mock/mockData";
 
 vi.mock("@/components/Body/CampaignHeroBanner", () => ({
   CampaignHeroBanner: () => (
-    <div data-testid="campaignHeroBanner">Mock CampaignHeroBanner</div>
+    <div data-testid="campaignHeroBanner">
+      Mock CampaignHeroBanner component
+    </div>
   ),
+}));
+
+vi.mock("@/hooks/useCampaign", () => ({
+  useGetCampaignList: vi.fn(),
 }));
 
 vi.mock("@/stores/useCampaignStore", () => ({
   useCampaignStore: vi.fn(),
 }));
+
+vi.mocked(useGetCampaignList).mockReturnValue({
+  handleGetCampaignList: vi.fn(),
+});
 
 describe("Home component", () => {
   beforeEach(() => {
@@ -37,19 +49,11 @@ describe("Home component", () => {
 
   it("should render campaign list when category list is not empty", () => {
     vi.mocked(useCampaignStore).mockReturnValue({
-      campaignList: [
-        {
-          id: "1",
-          title: "title",
-          subTitle: "sub title",
-          imageUrl: "/imageUrl",
-          linkUrl: "/linkUrl",
-        },
-      ],
+      campaignList: mockCategoryList[0].campaigns,
     });
 
     render(<Home />);
 
-    expect(screen.queryByTestId("campaignHeroBanner")).toBeInTheDocument();
+    expect(screen.getAllByTestId("campaignHeroBanner")).toHaveLength(2);
   });
 });
