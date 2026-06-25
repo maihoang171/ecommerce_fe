@@ -1,4 +1,4 @@
-// // @vitest-environment jsdom
+// @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { mockProductList } from "@/tests/mock/mockData";
