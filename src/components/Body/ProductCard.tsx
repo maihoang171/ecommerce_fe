@@ -1,13 +1,13 @@
 import type { IProduct } from "@/services/product";
 import { Link } from "react-router-dom";
 import { ProductColorSelector } from "./ProductColorSelector";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
-interface IProductDetailState {
+interface IProductCartState {
   product: IProduct;
 }
 
-export const ProductDetail = ({ product }: IProductDetailState) => {
+export const ProductCard = ({ product }: IProductCartState) => {
   const discountPercent = product.discountPrice
     ? ((product.price - product.discountPrice) / product.price) * 100
     : 0;
@@ -23,15 +23,10 @@ export const ProductDetail = ({ product }: IProductDetailState) => {
     product.images.find((img) => img.color === selectedColor) ||
     product.images[0];
 
-  useEffect(() => {
-    product.images.forEach((image) => {
-      const img = new Image();
-      img.src = image.imageUrl;
-    });
-  }, []);
-
   return (
-    <Link to={`/product?id=${product.id}`}>
+    <Link
+      to={`/product/${product.id}?categoryId=${product.categoryId}&color=${selectedColor}`}
+    >
       <div className="group cursor-pointer aspect-square">
         <div className="relative overflow-hidden ">
           <img
@@ -50,10 +45,10 @@ export const ProductDetail = ({ product }: IProductDetailState) => {
           )}
         </div>
 
+        <div className="line-clamp-1">{product.name}</div>
+
         {product.discountPrice ? (
           <div>
-            <div className="line-clamp-1">{product.name}</div>
-
             <div className="flex flex-row gap-5">
               <div className="text-red-500">${product.discountPrice}</div>
 
@@ -62,7 +57,6 @@ export const ProductDetail = ({ product }: IProductDetailState) => {
           </div>
         ) : (
           <div>
-            <div className="line-clamp-1">{product.name}</div>
             <div>${product.price}</div>
           </div>
         )}

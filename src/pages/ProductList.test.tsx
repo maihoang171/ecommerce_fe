@@ -34,10 +34,10 @@ vi.mock("react-router-dom", async () => {
   };
 });
 
-vi.mock("@/components/Body/ProductDetail", () => ({
-  ProductDetail: () => (
-    <div data-testid="mock-product-detail-component">
-      Fake Product Detail Component
+vi.mock("@/components/Body/ProductCart", () => ({
+  ProductCart: () => (
+    <div data-testid="mock-product-cart-component">
+      Fake Product Cart Component
     </div>
   ),
 }));
@@ -175,7 +175,7 @@ describe("ProductList", () => {
     );
 
     expect(screen.getByText(/2 products/i)).toBeInTheDocument();
-    expect(screen.getAllByTestId("mock-product-detail-component")).toHaveLength(
+    expect(screen.getAllByTestId("mock-product-cart-component")).toHaveLength(
       2,
     );
   });
@@ -188,7 +188,7 @@ describe("ProductList", () => {
       childSlug: "dresses",
     });
 
-    const mockSetActiveParentCategory = vi.fn()
+    const mockSetActiveParentCategory = vi.fn();
     vi.mocked(useCategoryStore).mockReturnValue({
       categoryList: [],
       activeParentCategory: undefined,
@@ -203,6 +203,6 @@ describe("ProductList", () => {
       </MemoryRouter>,
     );
 
-    expect(mockSetActiveParentCategory).not.toHaveBeenCalled()
+    expect(mockSetActiveParentCategory).not.toHaveBeenCalled();
   });
 });

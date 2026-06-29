@@ -41,3 +41,11 @@ export const getProductListByCategorySlugService = async (
 
   return res.data;
 };
+
+export const getProductService = async (id: string, categoryId: string) => {
+  const res = await axiosClient.get<ApiResponse<IProduct>>(
+    `product/${id}?categoryId=${categoryId}`,
+  );
+  
+  return res.data;
+};

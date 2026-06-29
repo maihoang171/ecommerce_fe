@@ -4,6 +4,7 @@ import { Category } from "../pages/Category";
 import { ProductList } from "../pages/ProductList";
 import { RootLayout } from "@/layouts/RootLayout";
 import { NotFound } from "@/pages/NotFound";
+import { ProductDetail } from "@/pages/Product";
 
 export const AppRoute = () => {
   return (
@@ -14,6 +15,8 @@ export const AppRoute = () => {
         <Route path="/:parentSlug/:childSlug" element={<ProductList />} />
 
         <Route path="/:parentSlug" element={<Category />} />
+
+        <Route path="/product/:id" element={<ProductDetail />} />
 
         <Route path="/not-found" element={<NotFound />} />
       </Route>

@@ -2,7 +2,7 @@ import { useParams } from "react-router-dom";
 import { useProductStore } from "@/stores/useProductStore";
 import { useEffect } from "react";
 import { useGetProductList } from "@/hooks/useProduct";
-import { ProductDetail } from "@/components/Body/ProductDetail";
+import { ProductCard } from "@/components/Body/ProductCard";
 import { useCategoryStore } from "@/stores/useCategoryStore";
 import type { ICategory } from "@/services/category";
 import { useNavigate } from "react-router-dom";
@@ -84,7 +84,7 @@ export const ProductList = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
           {displayProductList.map((p) => (
             <div key={p.id}>
-              <ProductDetail product={p} />
+              <ProductCard product={p} />
             </div>
           ))}
         </div>
