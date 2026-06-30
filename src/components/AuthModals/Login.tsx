@@ -3,6 +3,7 @@ import { baseAuthSchema, type LoginInput } from "@/schemas/authSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuthModalStore } from "@/stores/useAuthModelStore";
 import { useLogin } from "@/hooks/useAuth";
+import { Loading } from "../Body/Loading";
 
 export const Login = () => {
   const {
@@ -16,7 +17,7 @@ export const Login = () => {
   });
 
   const { openRegister, close } = useAuthModalStore();
-  const { handleLogin } = useLogin();
+  const { handleLogin, isLoading } = useLogin();
 
   const handleLoginSubmit = async (data: LoginInput) => {
     try {
@@ -78,7 +79,7 @@ export const Login = () => {
           {isSubmitting ? "Loading..." : "Login"}
         </button>
       </form>
-      <p className="text-center mt-2">
+      <p className="text-center m-2">
         Don't have an account? Register{" "}
         <button
           type="button"
@@ -89,6 +90,8 @@ export const Login = () => {
         </button>
         .
       </p>
+
+      {isLoading && <Loading className="h-10" />}
     </div>
   );
 };

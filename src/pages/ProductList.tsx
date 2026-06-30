@@ -6,10 +6,11 @@ import { ProductDetail } from "@/components/Body/ProductDetail";
 import { useCategoryStore } from "@/stores/useCategoryStore";
 import type { ICategory } from "@/services/category";
 import { useNavigate } from "react-router-dom";
+import { Loading } from "@/components/Body/Loading";
 
 export const ProductList = () => {
   const { productList } = useProductStore();
-  const { handleGetProductList } = useGetProductList();
+  const { handleGetProductList, isLoading } = useGetProductList();
 
   const { parentSlug, childSlug } = useParams();
   const {
@@ -58,6 +59,8 @@ export const ProductList = () => {
     setActiveChildCategory(child);
     navigate(`/${activeParentCategory?.slug}/${child.slug}`);
   };
+
+  if (isLoading) return <Loading />;
 
   if (displayProductList.length > 0)
     return (

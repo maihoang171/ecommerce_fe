@@ -3,11 +3,11 @@ import { Link } from "react-router-dom";
 import { ProductColorSelector } from "./ProductColorSelector";
 import { useState, useEffect } from "react";
 
-interface IProductDetailState {
+interface IProductDetailProps {
   product: IProduct;
 }
 
-export const ProductDetail = ({ product }: IProductDetailState) => {
+export const ProductDetail = ({ product }: IProductDetailProps) => {
   const discountPercent = product.discountPrice
     ? ((product.price - product.discountPrice) / product.price) * 100
     : 0;

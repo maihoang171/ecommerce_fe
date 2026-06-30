@@ -13,7 +13,7 @@ const COLOR_DICTIONARY: Record<string, string> = {
   CLASSIC_ORANGE: "#f97316",
 };
 
-interface IProductColorSelectorState {
+interface IProductColorSelectorProps {
   product: IProduct;
   selectedColor: string;
   onSelectColor: (color: string) => void;
@@ -23,7 +23,7 @@ export const ProductColorSelector = ({
   product,
   selectedColor,
   onSelectColor,
-}: IProductColorSelectorState) => {
+}: IProductColorSelectorProps) => {
   const allColors = product.variants.map((v) => v.color);
   const uniqueColors = Array.from(new Set(allColors));
 

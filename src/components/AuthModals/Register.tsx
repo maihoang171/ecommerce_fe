@@ -3,6 +3,7 @@ import { registerSchema, type RegisterInput } from "@/schemas/authSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuthModalStore } from "@/stores/useAuthModelStore";
 import { useRegisterUser } from "@/hooks/useAuth";
+import { Loading } from "../Body/Loading";
 
 export const Register = () => {
   const {
@@ -15,7 +16,7 @@ export const Register = () => {
     criteriaMode: "all",
   });
 
-  const { handleRegisterUser } = useRegisterUser();
+  const { handleRegisterUser, isLoading } = useRegisterUser();
   const { openLogin, close } = useAuthModalStore();
 
   const handleRegisterSubmit = async (data: RegisterInput) => {
@@ -101,6 +102,7 @@ export const Register = () => {
         </button>{" "}
         to login.
       </p>
+      {isLoading && <Loading className="h-10"/>}
     </div>
   );
 };

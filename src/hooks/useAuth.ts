@@ -14,9 +14,13 @@ import { useNavigate } from "react-router-dom";
 import { isAxiosError } from "axios";
 
 export const useRegisterUser = () => {
+  const [isLoading, setIsLoading] = useState(false);
+
   const handleRegisterUser = async (data: RegisterInput) => {
     const { confirmPassword: _confirmPassword, ...registerPayload } = data;
     void _confirmPassword;
+
+    setIsLoading(true);
     try {
       await registerService(registerPayload);
       toast.success("Register successfully", {
@@ -28,17 +32,24 @@ export const useRegisterUser = () => {
       toast.error(`Register failed: ${errMsg}`, {
         position: "bottom-right",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return {
     handleRegisterUser,
+    isLoading,
   };
 };
 
 export const useLogin = () => {
   const { setAuth } = useAuthStore();
+  const [isLoading, setIsLoading] = useState(false);
+
   const handleLogin = async (data: LoginInput) => {
+    setIsLoading(true);
+
     try {
       const res = await loginService(data);
       const user = res.data;
@@ -66,17 +77,21 @@ export const useLogin = () => {
         position: "bottom-right",
       });
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  return { handleLogin };
+  return { handleLogin, isLoading };
 };
 
 export const useSyncAuthSession = () => {
   const { setAuth } = useAuthStore();
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSyncAuthSession = async () => {
+    setIsLoading(true);
     try {
       const refreshRes = await getRefreshTokenService();
 
@@ -109,19 +124,21 @@ export const useSyncAuthSession = () => {
       });
     } finally {
       setIsCheckingAuth(false);
+      setIsLoading(false);
     }
   };
 
-  return { isCheckingAuth, handleSyncAuthSession };
+  return { isCheckingAuth, handleSyncAuthSession, isLoading };
 };
 
 export const useLogout = () => {
   const { clearAuth } = useAuthStore();
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogout = async () => {
     const user = useAuthStore.getState().user;
-
+    setIsLoading(true);
     if (!user) {
       clearAuth();
       toast.success("Session cleared. Logged out", {
@@ -153,8 +170,9 @@ export const useLogout = () => {
       });
 
       navigate("/");
+    } finally {
+      setIsLoading(false);
     }
   };
-
-  return { handleLogout };
+  return { handleLogout, isLoading };
 };

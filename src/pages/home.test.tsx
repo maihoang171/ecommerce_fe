@@ -25,6 +25,7 @@ vi.mock("@/stores/useCampaignStore", () => ({
 
 vi.mocked(useGetCampaignList).mockReturnValue({
   handleGetCampaignList: vi.fn(),
+  isLoading: false
 });
 
 describe("Home component", () => {
