@@ -8,11 +8,12 @@ import { useState } from "react";
 
 export const useGetProductList = () => {
   const { setProductList } = useProductStore();
-
+  const [isLoading, setIsLoading] = useState(false);
   const handleGetProductList = async (
     parentSlug: string,
     childSlug?: string,
   ) => {
+    setIsLoading(true);
     try {
       const res = await getProductListByCategorySlugService(
         parentSlug,
@@ -29,10 +30,12 @@ export const useGetProductList = () => {
       const errMsg = extractErrorMsg(error);
 
       console.error("Failed to fetch product list: " + errMsg);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  return { handleGetProductList };
+  return { handleGetProductList, isLoading };
 };
 
 export const useGetProduct = () => {

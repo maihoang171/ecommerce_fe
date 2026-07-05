@@ -14,31 +14,50 @@ import { useNavigate } from "react-router-dom";
 import { isAxiosError } from "axios";
 
 export const useRegisterUser = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [errMsg, setErrMsg] = useState<string | null>(null);
+
   const handleRegisterUser = async (data: RegisterInput) => {
     const { confirmPassword: _confirmPassword, ...registerPayload } = data;
     void _confirmPassword;
+
+    setIsLoading(true);
     try {
       await registerService(registerPayload);
+
+      setErrMsg(null);
+
       toast.success("Register successfully", {
         position: "bottom-right",
       });
-    } catch (error) {
-      const errMsg = extractErrorMsg(error);
 
-      toast.error(`Register failed: ${errMsg}`, {
-        position: "bottom-right",
-      });
+      return true;
+    } catch (error) {
+      const msg = extractErrorMsg(error);
+      setErrMsg(msg);
+
+      console.error(`Register failed: ${msg}`);
+      return false;
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return {
     handleRegisterUser,
+    isLoading,
+    errMsg,
   };
 };
 
 export const useLogin = () => {
   const { setAuth } = useAuthStore();
+  const [isLoading, setIsLoading] = useState(false);
+  const [errMsg, setErrMsg] = useState<string | null>(null);
+
   const handleLogin = async (data: LoginInput) => {
+    setIsLoading(true);
+
     try {
       const res = await loginService(data);
       const user = res.data;
@@ -53,30 +72,35 @@ export const useLogin = () => {
       }
 
       setAuth(user, accessToken);
+      setErrMsg(null);
 
       toast.success(`Welcome back, ${user.username}!`, {
         position: "bottom-right",
       });
 
-      return user;
+      return true;
     } catch (error) {
-      const errMsg = extractErrorMsg(error);
+      const message = extractErrorMsg(error);
+      setErrMsg(message);
 
-      toast.error("Login failed: " + errMsg, {
-        position: "bottom-right",
-      });
-      throw error;
+      console.error("Login failed: " + message);
+
+      return false;
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  return { handleLogin };
+  return { handleLogin, isLoading, errMsg };
 };
 
 export const useSyncAuthSession = () => {
   const { setAuth } = useAuthStore();
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSyncAuthSession = async () => {
+    setIsLoading(true);
     try {
       const refreshRes = await getRefreshTokenService();
 
@@ -94,34 +118,40 @@ export const useSyncAuthSession = () => {
       }
 
       setAuth(user, newAccessToken);
+
+      return true;
     } catch (error) {
       if (isAxiosError(error) && error.response?.status === 401) {
         useAuthStore.getState().clearAuth();
 
         setIsCheckingAuth(false);
 
-        return;
+        return false;
       }
 
-      const errMsg = extractErrorMsg(error);
-      toast.error(`Sync session failed: ${errMsg}`, {
+      const message = extractErrorMsg(error);
+      toast.error(`Sync session failed: ${message}`, {
         position: "bottom-right",
       });
+
+      return false;
     } finally {
       setIsCheckingAuth(false);
+      setIsLoading(false);
     }
   };
 
-  return { isCheckingAuth, handleSyncAuthSession };
+  return { isCheckingAuth, handleSyncAuthSession, isLoading };
 };
 
 export const useLogout = () => {
   const { clearAuth } = useAuthStore();
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogout = async () => {
     const user = useAuthStore.getState().user;
-
+    setIsLoading(true);
     if (!user) {
       clearAuth();
       toast.success("Session cleared. Logged out", {
@@ -153,8 +183,9 @@ export const useLogout = () => {
       });
 
       navigate("/");
+    } finally {
+      setIsLoading(false);
     }
   };
-
-  return { handleLogout };
+  return { handleLogout, isLoading };
 };

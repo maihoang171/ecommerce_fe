@@ -8,16 +8,16 @@ import { ProductList } from "./ProductList";
 import { useCategoryStore } from "@/stores/useCategoryStore";
 import userEvent from "@testing-library/user-event";
 import { mockProductList, mockCategoryList } from "@/tests/mock/mockData";
+import { useGetProductList } from "@/hooks/useProduct";
 
 vi.mock("@/stores/useProductStore", () => ({
   useProductStore: vi.fn(),
 }));
 
 vi.mock("@/hooks/useProduct", () => ({
-  useGetProductList: vi.fn(() => ({
-    handleGetProductList: vi.fn(),
-  })),
+  useGetProductList: vi.fn(),
 }));
+const useGetProductListMock = vi.mocked(useGetProductList);
 
 vi.mock("@/stores/useCategoryStore", () => ({
   useCategoryStore: vi.fn(),
@@ -34,17 +34,28 @@ vi.mock("react-router-dom", async () => {
   };
 });
 
-vi.mock("@/components/Body/ProductCart", () => ({
-  ProductCart: () => (
-    <div data-testid="mock-product-cart-component">
-      Fake Product Cart Component
+vi.mock("@/components/Body/ProductCard", () => ({
+  ProductCard: () => (
+    <div data-testid="mock-product-detail-component">
+      Fake Product Detail Component
     </div>
+  ),
+}));
+
+vi.mock("@/components/Body/Loading", () => ({
+  Loading: () => (
+    <div data-testid="loading-spinner">Mock Loading component</div>
   ),
 }));
 
 describe("ProductList", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+
+    useGetProductListMock.mockReturnValue({
+      handleGetProductList: vi.fn(),
+      isLoading: false,
+    });
   });
 
   afterEach(() => {
@@ -204,5 +215,20 @@ describe("ProductList", () => {
     );
 
     expect(mockSetActiveParentCategory).not.toHaveBeenCalled();
+  });
+
+  it("should display loading spinner when isLoading is true", () => {
+    useGetProductListMock.mockReturnValue({
+      handleGetProductList: vi.fn(),
+      isLoading: true,
+    });
+
+    render(
+      <MemoryRouter>
+        <ProductList />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByTestId("loading-spinner")).toBeInTheDocument();
   });
 });

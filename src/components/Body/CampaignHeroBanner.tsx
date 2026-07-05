@@ -2,11 +2,11 @@ import { Link } from "react-router-dom";
 import { ArrowRightIcon } from "lucide-react";
 import type { ICampaign } from "@/services/category";
 
-interface CampaignHeroBannerState {
+interface CampaignHeroBannerProps {
   campaign: ICampaign;
 }
 
-export const CampaignHeroBanner = ({ campaign }: CampaignHeroBannerState) => {
+export const CampaignHeroBanner = ({ campaign }: CampaignHeroBannerProps) => {
   return (
     <Link
       key={campaign.id}

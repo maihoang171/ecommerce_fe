@@ -7,7 +7,11 @@ import { ProductCard } from "./ProductCard";
 import { MemoryRouter } from "react-router-dom";
 import userEvent from "@testing-library/user-event";
 
+<<<<<<< HEAD
 describe("ProductCart component", () => {
+=======
+describe("ProductCard component", () => {
+>>>>>>> main
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -90,13 +94,15 @@ describe("ProductCart component", () => {
   it("should display the image index 0 when all images primary is false", async () => {
     const mockProduct = {
       ...mockProductList[0],
-      variants: [{
-        id: "fake-variant-1",
+      variants: [
+        {
+          id: "fake-variant-1",
           color: "WEIRD_NEON_GREEN", // fake color
           size: "S",
           stockQuantity: 10,
           sku: "TEST-SKU",
-      }]
+        },
+      ],
     };
 
     render(

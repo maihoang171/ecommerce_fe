@@ -3,11 +3,11 @@ import { Link } from "react-router-dom";
 import { ProductColorSelector } from "./ProductColorSelector";
 import { useState } from "react";
 
-interface IProductCartState {
+interface IProductCardProps {
   product: IProduct;
 }
 
-export const ProductCard = ({ product }: IProductCartState) => {
+export const ProductCard = ({ product }: IProductCardProps) => {
   const discountPercent = product.discountPrice
     ? ((product.price - product.discountPrice) / product.price) * 100
     : 0;

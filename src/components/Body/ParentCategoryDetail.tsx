@@ -2,13 +2,13 @@ import type { ICategory, IParentCategory } from "@/services/category";
 import { useNavigate } from "react-router-dom";
 import { useCategoryStore } from "@/stores/useCategoryStore";
 
-interface IParentCategoryDetailState {
+interface IParentCategoryDetailProps {
   category: IParentCategory;
 }
 
 export const ParentCategoryDetail = ({
   category,
-}: IParentCategoryDetailState) => {
+}: IParentCategoryDetailProps) => {
   const navigate = useNavigate();
 
   const { setActiveChildCategory } = useCategoryStore();

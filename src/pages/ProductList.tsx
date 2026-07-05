@@ -6,10 +6,11 @@ import { ProductCard } from "@/components/Body/ProductCard";
 import { useCategoryStore } from "@/stores/useCategoryStore";
 import type { ICategory } from "@/services/category";
 import { useNavigate } from "react-router-dom";
+import { Loading } from "@/components/Body/Loading";
 
 export const ProductList = () => {
   const { productList } = useProductStore();
-  const { handleGetProductList } = useGetProductList();
+  const { handleGetProductList, isLoading } = useGetProductList();
 
   const { parentSlug, childSlug } = useParams();
   const {
@@ -59,9 +60,11 @@ export const ProductList = () => {
     navigate(`/${activeParentCategory?.slug}/${child.slug}`);
   };
 
+  if (isLoading) return <Loading />;
+
   if (displayProductList.length > 0)
     return (
-      <div>
+      <div className="mb-5">
         <div className="text-3xl font-bold">{activeChildCategory?.name}</div>
 
         <div className="flex gap-5 mt-5 text-xl border-b border-gray-300 hover:overflow-x-auto flex-nowrap font-light">
