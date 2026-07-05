@@ -22,6 +22,7 @@ import {
   mockValidUserDataInput,
   mockAuthSuccessResponse,
 } from "@/tests/mock/mockResponse";
+import { extractErrorMsg } from "@/utils/error";
 
 const mockNavigate = vi.fn();
 vi.mock("react-router-dom", async () => {
@@ -49,8 +50,15 @@ vi.mock("sonner", () => ({
     error: vi.fn(),
   },
 }));
+
 const mockToastSuccess = vi.mocked(toast.success);
 const mockToastError = vi.mocked(toast.error);
+
+vi.mock("@/utils/error", () => ({
+  extractErrorMsg: vi.fn(),
+}));
+
+const mockExtractErrMsg = vi.mocked(extractErrorMsg);
 
 describe("useRegisterUser Custom Hook", () => {
   const mockRegisterService = vi.mocked(registerService);
@@ -82,20 +90,27 @@ describe("useRegisterUser Custom Hook", () => {
     });
   });
 
-  it("should trigger error toast on failure", async () => {
+  it("should display error message on failure", async () => {
     const err = new Error("Something went wrong");
     mockRegisterService.mockRejectedValue(err);
+    mockExtractErrMsg.mockReturnValue(err.message);
+
+    const consoleErrSpy = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
 
     const { result } = renderHook(() => useRegisterUser());
 
-    await result.current.handleRegisterUser(validInput);
-
-    expect(mockToastError).toHaveBeenCalledWith(
-      `Register failed: ${err.message}`,
-      {
-        position: "bottom-right",
-      },
+    await expect(result.current.handleRegisterUser(validInput)).resolves.toBe(
+      false,
     );
+
+    expect(mockExtractErrMsg).toHaveBeenCalled();
+    expect(consoleErrSpy).toHaveBeenCalledWith(
+      `Register failed: ${err.message}`,
+    );
+
+    consoleErrSpy.mockRestore();
   });
 });
 
@@ -104,6 +119,7 @@ describe("useLogin Custom Hook", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+
     useAuthStore.setState({
       user: null,
       isLoggedIn: false,
@@ -114,7 +130,7 @@ describe("useLogin Custom Hook", () => {
     cleanup();
   });
 
-  it("should throw error if user not found", async () => {
+  it("should return false if user not found", async () => {
     mockLoginService.mockResolvedValue({
       ...mockAuthSuccessResponse,
       data: null,
@@ -124,10 +140,10 @@ describe("useLogin Custom Hook", () => {
 
     await expect(
       result.current.handleLogin(mockValidUserDataInput),
-    ).rejects.toThrow("Invalid username or password");
+    ).resolves.toBe(false);
   });
 
-  it("should throw error if access token not found", async () => {
+  it("should return false if access token not found", async () => {
     mockLoginService.mockResolvedValue({
       ...mockAuthSuccessResponse,
       accessToken: undefined,
@@ -137,7 +153,7 @@ describe("useLogin Custom Hook", () => {
 
     await expect(
       result.current.handleLogin(mockValidUserDataInput),
-    ).rejects.toThrow("Access token not found");
+    ).resolves.toBe(false);
   });
 
   it("should sync user data to Zustand store and trigger success toast on success", async () => {
@@ -145,12 +161,10 @@ describe("useLogin Custom Hook", () => {
 
     const { result } = renderHook(() => useLogin());
 
-    const returnedUser = await result.current.handleLogin(
-      mockValidUserDataInput,
-    );
+    const success = await result.current.handleLogin(mockValidUserDataInput);
 
     expect(mockLoginService).toHaveBeenCalledWith(mockValidUserDataInput);
-    expect(returnedUser).toEqual(mockAuthSuccessResponse.data);
+    expect(success).toBe(true);
     expect(useAuthStore.getState().user).toEqual(mockAuthSuccessResponse.data);
     expect(useAuthStore.getState().isLoggedIn).toBe(true);
     expect(mockToastSuccess).toHaveBeenCalledWith(
@@ -161,22 +175,21 @@ describe("useLogin Custom Hook", () => {
     );
   });
 
-  it("should trigger error toast on failure", async () => {
+  it("should display error message on failure", async () => {
     const err = new Error("Something went wrong");
     mockLoginService.mockRejectedValue(err);
+    mockExtractErrMsg.mockReturnValue(err.message);
+
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
     const { result } = renderHook(() => useLogin());
 
     await expect(
       result.current.handleLogin(mockValidUserDataInput),
-    ).rejects.toThrow();
+    ).resolves.toBe(false);
 
-    expect(mockToastError).toHaveBeenCalledWith(
-      `Login failed: ${err.message}`,
-      {
-        position: "bottom-right",
-      },
-    );
+    expect(consoleSpy).toHaveBeenCalledWith(`Login failed: ${err.message}`);
+    consoleSpy.mockRestore();
   });
 });
 
@@ -186,6 +199,7 @@ describe("useSyncAuthSession Custom Hook", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+
     useAuthStore.setState({
       user: null,
       isLoggedIn: false,
@@ -203,11 +217,12 @@ describe("useSyncAuthSession Custom Hook", () => {
       data: null,
     });
 
+    vi.mocked(extractErrorMsg).mockReturnValue("Session expired.");
+
     const { result } = renderHook(() => useSyncAuthSession());
 
-    await expect(
-      result.current.handleSyncAuthSession(),
-    ).resolves.toBeUndefined();
+    await expect(result.current.handleSyncAuthSession()).resolves.toBe(false);
+
     expect(mockToastError).toHaveBeenCalledWith(
       "Sync session failed: Session expired.",
       {
@@ -223,11 +238,12 @@ describe("useSyncAuthSession Custom Hook", () => {
       data: null,
     });
 
+    vi.mocked(extractErrorMsg).mockReturnValue("Session expired.");
+
     const { result } = renderHook(() => useSyncAuthSession());
 
-    await expect(
-      result.current.handleSyncAuthSession(),
-    ).resolves.toBeUndefined();
+    await expect(result.current.handleSyncAuthSession()).resolves.toBe(false);
+
     expect(mockToastError).toHaveBeenCalledWith(
       "Sync session failed: Session expired.",
       {
@@ -250,7 +266,7 @@ describe("useSyncAuthSession Custom Hook", () => {
       data: null,
     });
 
-    expect(result.current.handleSyncAuthSession()).resolves.toBeUndefined();
+    expect(result.current.handleSyncAuthSession()).resolves.toBe(false);
   });
 
   it("should throw error if user not found", async () => {
@@ -267,7 +283,7 @@ describe("useSyncAuthSession Custom Hook", () => {
 
     const { result } = renderHook(() => useSyncAuthSession());
 
-    expect(result.current.handleSyncAuthSession()).resolves.toBeUndefined();
+    expect(result.current.handleSyncAuthSession()).resolves.toBe(false);
   });
 
   it("should clearAuth and setIsCheckingAuth false on error with status code 401", async () => {
@@ -310,9 +326,9 @@ describe("useSyncAuthSession Custom Hook", () => {
 
     const { result } = renderHook(() => useSyncAuthSession());
 
-    const returnedUser = await result.current.handleSyncAuthSession();
+    const success = await result.current.handleSyncAuthSession();
 
-    expect(returnedUser).toBeUndefined();
+    expect(success).toBe(true);
     expect(useAuthStore.getState().user).toEqual(mockUserData);
   });
 });

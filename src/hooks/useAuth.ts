@@ -15,6 +15,7 @@ import { isAxiosError } from "axios";
 
 export const useRegisterUser = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [errMsg, setErrMsg] = useState<string | null>(null);
 
   const handleRegisterUser = async (data: RegisterInput) => {
     const { confirmPassword: _confirmPassword, ...registerPayload } = data;
@@ -23,15 +24,20 @@ export const useRegisterUser = () => {
     setIsLoading(true);
     try {
       await registerService(registerPayload);
+
+      setErrMsg(null);
+
       toast.success("Register successfully", {
         position: "bottom-right",
       });
-    } catch (error) {
-      const errMsg = extractErrorMsg(error);
 
-      toast.error(`Register failed: ${errMsg}`, {
-        position: "bottom-right",
-      });
+      return true;
+    } catch (error) {
+      const msg = extractErrorMsg(error);
+      setErrMsg(msg);
+
+      console.error(`Register failed: ${msg}`);
+      return false;
     } finally {
       setIsLoading(false);
     }
@@ -40,12 +46,14 @@ export const useRegisterUser = () => {
   return {
     handleRegisterUser,
     isLoading,
+    errMsg,
   };
 };
 
 export const useLogin = () => {
   const { setAuth } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
+  const [errMsg, setErrMsg] = useState<string | null>(null);
 
   const handleLogin = async (data: LoginInput) => {
     setIsLoading(true);
@@ -64,25 +72,26 @@ export const useLogin = () => {
       }
 
       setAuth(user, accessToken);
+      setErrMsg(null);
 
       toast.success(`Welcome back, ${user.username}!`, {
         position: "bottom-right",
       });
 
-      return user;
+      return true;
     } catch (error) {
-      const errMsg = extractErrorMsg(error);
+      const message = extractErrorMsg(error);
+      setErrMsg(message);
 
-      toast.error("Login failed: " + errMsg, {
-        position: "bottom-right",
-      });
-      throw error;
+      console.error("Login failed: " + message);
+
+      return false;
     } finally {
       setIsLoading(false);
     }
   };
 
-  return { handleLogin, isLoading };
+  return { handleLogin, isLoading, errMsg };
 };
 
 export const useSyncAuthSession = () => {
@@ -109,19 +118,23 @@ export const useSyncAuthSession = () => {
       }
 
       setAuth(user, newAccessToken);
+
+      return true;
     } catch (error) {
       if (isAxiosError(error) && error.response?.status === 401) {
         useAuthStore.getState().clearAuth();
 
         setIsCheckingAuth(false);
 
-        return;
+        return false;
       }
 
-      const errMsg = extractErrorMsg(error);
-      toast.error(`Sync session failed: ${errMsg}`, {
+      const message = extractErrorMsg(error);
+      toast.error(`Sync session failed: ${message}`, {
         position: "bottom-right",
       });
+
+      return false;
     } finally {
       setIsCheckingAuth(false);
       setIsLoading(false);

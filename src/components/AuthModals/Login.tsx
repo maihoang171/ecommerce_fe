@@ -17,15 +17,12 @@ export const Login = () => {
   });
 
   const { openRegister, close } = useAuthModalStore();
-  const { handleLogin, isLoading } = useLogin();
+  const { handleLogin, isLoading, errMsg } = useLogin();
 
   const handleLoginSubmit = async (data: LoginInput) => {
-    try {
-      await handleLogin(data);
-      close();
-    } catch (error) {
-      console.log(error);
-    }
+    const success = await handleLogin(data);
+
+    if (success) close();
   };
 
   return (
@@ -72,11 +69,11 @@ export const Login = () => {
           )}
         </fieldset>
         <button
-          className="btn bg-black text-white w-full hover:bg-gray-700 transition-colors"
+          className="btn bg-black text-white w-full hover:bg-gray-700 transition-colors disabled:bg-gray-400"
           type="submit"
           disabled={isSubmitting}
         >
-          {isSubmitting ? "Loading..." : "Login"}
+          Login
         </button>
       </form>
       <p className="text-center m-2">
@@ -92,6 +89,8 @@ export const Login = () => {
       </p>
 
       {isLoading && <Loading className="h-10" />}
+
+      {errMsg && <p className="text-center text-red-500">{errMsg}</p>}
     </div>
   );
 };

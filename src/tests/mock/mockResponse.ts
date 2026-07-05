@@ -30,7 +30,7 @@ export const mockProductListResponse = {
   data: mockProductList,
 };
 
-export const mockProductDetailResponse = {
+export const mockProductCardResponse = {
   success: true,
   data: mockProductList[0],
 };
