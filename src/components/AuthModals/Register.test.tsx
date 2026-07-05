@@ -14,6 +14,17 @@ vi.mock("@/hooks/useAuth", () => ({
   useRegisterUser: vi.fn(),
 }));
 
+const mockUserRegisterUser = vi.mocked(useRegisterUser);
+const mockHandleRegisterUser = vi.fn();
+const setup = (overrides = {}) => {
+  mockUserRegisterUser.mockReturnValue({
+    handleRegisterUser: mockHandleRegisterUser,
+    isLoading: false,
+    errMsg: null,
+    ...overrides,
+  });
+};
+
 const mockOpenLogin = vi.fn();
 const mockClose = vi.fn();
 vi.mock("@/stores/useAuthModelStore", () => ({
@@ -23,22 +34,23 @@ vi.mock("@/stores/useAuthModelStore", () => ({
   }),
 }));
 
-describe("register component validation and submission", () => {
-  const mockHandleRegisterUser = vi.fn();
+vi.mock("@/components/Body/Loading", () => ({
+  Loading: () => (
+    <div data-testid="loading-spinner">Mock Loading Component</div>
+  ),
+}));
 
+describe("register component validation and submission", () => {
   afterEach(() => {
     cleanup();
   });
 
   beforeEach(() => {
     vi.clearAllMocks();
-
-    (useRegisterUser as ReturnType<typeof vi.fn>).mockReturnValue({
-      handleRegisterUser: mockHandleRegisterUser,
-    });
   });
 
   it("should render all elements property", () => {
+    setup();
     render(<Register />);
     expect(screen.getByPlaceholderText("Username")).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Password")).toBeInTheDocument();
@@ -49,10 +61,10 @@ describe("register component validation and submission", () => {
   });
 
   runUsernameTests(() => render(<Register />));
-
   runPasswordTests(() => render(<Register />));
 
   it("should switch to login modal on click", async () => {
+    setup();
     render(<Register />);
     expect(screen.getByRole("button", { name: "here" })).toBeInTheDocument();
     const user = userEvent.setup();
@@ -61,6 +73,9 @@ describe("register component validation and submission", () => {
   });
 
   it("should submit the form on successful validation", async () => {
+    setup();
+    vi.mocked(mockHandleRegisterUser).mockResolvedValue(true);
+
     render(<Register />);
     const user = userEvent.setup();
     const validUserInput = screen.getByPlaceholderText(/^username$/i);
@@ -78,5 +93,45 @@ describe("register component validation and submission", () => {
       expect(mockHandleRegisterUser).toHaveBeenCalled();
       expect(mockClose).toHaveBeenCalled();
     });
+  });
+
+  it("should keep the modal open when can not submit", async () => {
+    setup();
+    vi.mocked(mockHandleRegisterUser).mockResolvedValue(false);
+
+    render(<Register />);
+
+    const user = userEvent.setup();
+    const validUserInput = screen.getByPlaceholderText(/^username$/i);
+    const validPasswordInput = screen.getByPlaceholderText(/^password$/i);
+    const validConfirmPasswordInput =
+      screen.getByPlaceholderText(/^confirm password$/i);
+
+    await user.type(validUserInput, "user123");
+    await user.type(validPasswordInput, "User1234@");
+    await user.type(validConfirmPasswordInput, "User1234@");
+
+    await user.click(screen.getByRole("button", { name: "Register" }));
+
+    await waitFor(() => {
+      expect(mockHandleRegisterUser).toHaveBeenCalled();
+      expect(mockClose).not.toHaveBeenCalled();
+    });
+  });
+
+  it("should display loading spinner when isLoading is true", () => {
+    setup({ isLoading: true });
+
+    render(<Register />);
+
+    expect(screen.getByTestId("loading-spinner")).toBeInTheDocument();
+  });
+
+  it("should display error message when an error occurred", async () => {
+    setup({ errMsg: "Something went wrong" });
+
+    render(<Register />);
+
+    expect(screen.getByText("Something went wrong")).toBeInTheDocument();
   });
 });

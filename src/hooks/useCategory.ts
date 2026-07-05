@@ -1,13 +1,14 @@
-import {
-  getCategoryListService,
-} from "../services/category";
+import { getCategoryListService } from "../services/category";
 import { useCategoryStore } from "@/stores/useCategoryStore";
 import { extractErrorMsg } from "../utils/error";
+import { useState } from "react";
 
 export const useGetCategoryList = () => {
   const { setCategoryList } = useCategoryStore();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleGetCategoryList = async () => {
+    setIsLoading(true);
     try {
       const res = await getCategoryListService();
       const categoryList = res.data;
@@ -21,10 +22,10 @@ export const useGetCategoryList = () => {
       const errMsg = extractErrorMsg(error);
 
       console.error(`Get category list failed: ${errMsg}`);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  return { handleGetCategoryList };
+  return { handleGetCategoryList, isLoading };
 };
-
-

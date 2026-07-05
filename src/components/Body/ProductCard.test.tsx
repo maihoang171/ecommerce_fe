@@ -3,11 +3,11 @@ import "@testing-library/jest-dom/vitest";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { mockProductList } from "@/tests/mock/mockData";
 import { cleanup, render, screen } from "@testing-library/react";
-import { ProductDetail } from "./ProductDetail";
+import { ProductCard } from "./ProductCard";
 import { MemoryRouter } from "react-router-dom";
 import userEvent from "@testing-library/user-event";
 
-describe("ProductDetail component", () => {
+describe("ProductCard component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -19,7 +19,7 @@ describe("ProductDetail component", () => {
   it("should display discount price when product is on sale", () => {
     render(
       <MemoryRouter>
-        <ProductDetail product={mockProductList[0]} />
+        <ProductCard product={mockProductList[0]} />
       </MemoryRouter>,
     );
 
@@ -36,7 +36,7 @@ describe("ProductDetail component", () => {
   it("should not display discount price when product is not on sale", () => {
     render(
       <MemoryRouter>
-        <ProductDetail product={mockProductList[1]} />
+        <ProductCard product={mockProductList[1]} />
       </MemoryRouter>,
     );
 
@@ -49,7 +49,7 @@ describe("ProductDetail component", () => {
   it("should display the active image", () => {
     render(
       <MemoryRouter>
-        <ProductDetail product={mockProductList[0]} />
+        <ProductCard product={mockProductList[0]} />
       </MemoryRouter>,
     );
 
@@ -69,7 +69,7 @@ describe("ProductDetail component", () => {
 
     render(
       <MemoryRouter>
-        <ProductDetail product={mockProductList[0]} />
+        <ProductCard product={mockProductList[0]} />
       </MemoryRouter>,
     );
 
@@ -90,18 +90,20 @@ describe("ProductDetail component", () => {
   it("should display the image index 0 when all images primary is false", async () => {
     const mockProduct = {
       ...mockProductList[0],
-      variants: [{
-        id: "fake-variant-1",
+      variants: [
+        {
+          id: "fake-variant-1",
           color: "WEIRD_NEON_GREEN", // fake color
           size: "S",
           stockQuantity: 10,
           sku: "TEST-SKU",
-      }]
+        },
+      ],
     };
 
     render(
       <MemoryRouter>
-        <ProductDetail product={mockProduct} />
+        <ProductCard product={mockProduct} />
       </MemoryRouter>,
     );
 
