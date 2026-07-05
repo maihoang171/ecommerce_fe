@@ -7,11 +7,7 @@ import { ProductCard } from "./ProductCard";
 import { MemoryRouter } from "react-router-dom";
 import userEvent from "@testing-library/user-event";
 
-<<<<<<< HEAD
-describe("ProductCart component", () => {
-=======
 describe("ProductCard component", () => {
->>>>>>> main
   beforeEach(() => {
     vi.clearAllMocks();
   });
