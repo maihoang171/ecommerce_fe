@@ -53,6 +53,7 @@ describe("categoryNav component", () => {
 
     vi.mocked(useGetCategoryList).mockReturnValue({
       handleGetCategoryList: vi.fn(),
+      isLoading: false
     });
 
     vi.mocked(useCategoryStore).mockReturnValue({
