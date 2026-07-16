@@ -1,7 +1,7 @@
 import type { IProduct } from "@/services/product";
 import { Link } from "react-router-dom";
 import { ProductColorSelector } from "./ProductColorSelector";
-import React, { useState } from "react";
+import { useState } from "react";
 
 interface IProductCardProps {
   product: IProduct;
