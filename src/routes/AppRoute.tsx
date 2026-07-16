@@ -4,7 +4,7 @@ import { Category } from "../pages/Category";
 import { ProductList } from "../pages/ProductList";
 import { RootLayout } from "@/layouts/RootLayout";
 import { NotFound } from "@/pages/NotFound";
-import { ProductDetail } from "@/pages/Product";
+import { ProductDetail } from "@/pages/ProductDetail";
 
 export const AppRoute = () => {
   return (

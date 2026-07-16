@@ -5,6 +5,7 @@ import { mockProductList } from "@/tests/mock/mockData";
 import { cleanup, render, screen } from "@testing-library/react";
 import { ProductColorSelector } from "./ProductColorSelector";
 import userEvent from "@testing-library/user-event";
+import type { IProduct } from "@/services/product";
 
 describe("ProductColorSelector component", () => {
   beforeAll(() => {
@@ -15,7 +16,20 @@ describe("ProductColorSelector component", () => {
     cleanup();
   });
 
+  it("should return null when product variant is undefined", () => {
+    const emptyProduct = {} as IProduct;
+    const { container } = render(
+      <ProductColorSelector
+        product={emptyProduct}
+        selectedColor={"Red"}
+        onSelectColor={vi.fn()}
+      />,
+    );
+
+    expect(container.firstChild).toBe(null);
+  });
   const mockOnSelectColor = vi.fn();
+
   it("should render exactly one button per color", () => {
     render(
       <ProductColorSelector

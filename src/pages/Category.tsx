@@ -5,9 +5,7 @@ import { ParentCategoryDetail } from "@/components/Body/ParentCategoryDetail";
 
 export const Category = () => {
   const { parentSlug } = useParams();
-
   const { categoryList } = useCategoryStore();
-
   const currentCategory = categoryList.find((c) => c.slug === parentSlug);
 
   const navigate = useNavigate();

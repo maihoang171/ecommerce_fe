@@ -8,24 +8,28 @@ export const mockCategoryList: IParentCategory[] = [
     name: "WOMEN",
     slug: "women",
     imageUrl: "/assets/categories/women-main.jpg",
+    type: undefined,
     children: [
       {
         id: "101",
         name: "Dresses",
         slug: "dresses",
         imageUrl: "/assets/categories/dresses.jpg",
+        type: "TOP",
       },
       {
         id: "102",
         name: "Tops",
         slug: "tops",
         imageUrl: "/assets/categories/tops.jpg",
+        type: "TOP",
       },
       {
         id: "103",
         name: "Bottoms",
         slug: "bottoms",
         imageUrl: "/assets/categories/bottoms.jpg",
+        type: "BOTTOM",
       },
     ],
     campaigns: [
@@ -51,24 +55,28 @@ export const mockCategoryList: IParentCategory[] = [
     name: "MEN",
     slug: "men",
     imageUrl: "/assets/categories/men-main.jpg",
+    type: "PARENT",
     children: [
       {
         id: "201",
         name: "Shirts",
         slug: "shirts",
         imageUrl: "/assets/categories/shirts.jpg",
+        type: "TOP",
       },
       {
         id: "202",
         name: "Pants",
         slug: "pants",
         imageUrl: "/assets/categories/pants.jpg",
+        type: "Bottom",
       },
       {
         id: "203",
         name: "Outerwear",
         slug: "outerwear",
         imageUrl: "/assets/categories/outerwear.jpg",
+        type: "TOP",
       },
     ],
     campaigns: [
@@ -87,6 +95,7 @@ export const mockCategoryList: IParentCategory[] = [
     name: "ACCESSORIES",
     slug: "accessories",
     imageUrl: "/assets/categories/accessories-main.jpg",
+    type: "PARENT",
     children: [
       {
         id: "301",
@@ -101,13 +110,13 @@ export const mockCategoryList: IParentCategory[] = [
         imageUrl: "/assets/categories/jewelry.jpg",
       },
     ],
-    campaigns: [], // Good for testing empty states!
+    campaigns: [],
   },
 ];
 
 export const mockProductList: IProduct[] = [
   {
-    id: "prod-1",
+    id: "1",
     name: "Summer Floral Midi Dress",
     price: 89.99,
     discountPrice: 65.0,
@@ -134,7 +143,7 @@ export const mockProductList: IProduct[] = [
         id: "var-1-sm-red",
         size: "S",
         color: "Red",
-        stockQuantity: 15,
+        stockQuantity: 0,
         sku: "DRS-FLR-RED-S",
       },
       {

@@ -41,6 +41,7 @@ export const useGetProductList = () => {
 export const useGetProduct = () => {
   const { setProduct } = useProductStore();
   const [isLoading, setIsLoading] = useState(false);
+  const [errMsg, setErrMsg] = useState<string | null>(null);
 
   const handleGetProduct = async (productId: string, categoryId: string) => {
     setIsLoading(true);
@@ -52,14 +53,19 @@ export const useGetProduct = () => {
         throw Error("Product not found");
       }
 
+      setErrMsg(null);
       setProduct(product);
+      return true;
     } catch (error) {
-      const errMsg = extractErrorMsg(error);
+      const message = extractErrorMsg(error);
 
+      setErrMsg(message);
       console.error("Failed to fetch product: " + errMsg);
+
+      return false;
     } finally {
       setIsLoading(false);
     }
   };
-  return { handleGetProduct, isLoading };
+  return { handleGetProduct, isLoading, errMsg };
 };

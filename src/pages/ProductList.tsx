@@ -60,7 +60,7 @@ export const ProductList = () => {
     navigate(`/${activeParentCategory?.slug}/${child.slug}`);
   };
 
-  if (isLoading) return <Loading />;
+  if (isLoading || !displayProductList) return <Loading />;
 
   if (displayProductList.length > 0)
     return (

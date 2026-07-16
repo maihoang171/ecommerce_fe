@@ -1,29 +1,23 @@
 import type { IProduct } from "@/services/product";
 import React from "react";
+import { COLOR_DICTIONARY } from "@/constants/product";
 
-const COLOR_DICTIONARY: Record<string, string> = {
-  MIDNIGHT_BLUE: "#1e3a8a",
-  CRIMSON_RED: "#991b1b",
-  VINTAGE_WASH: "#7ca1c0",
-  CHARCOAL: "#374151",
-  CLASSIC_WHITE: "#ffffff",
-  CLASSIC_RED: "#dc2626",
-  CLASSIC_BLACK: "#000000",
-  CLASSIC_YELLOW: "#fbbf24",
-  CLASSIC_ORANGE: "#f97316",
-};
-
+// const ALLOWED_COLORS = Object.keys(COLOR_DICTIONARY)
 interface IProductColorSelectorProps {
   product: IProduct;
   selectedColor: string;
   onSelectColor: (color: string) => void;
 }
 
+type AllowedColors = keyof typeof COLOR_DICTIONARY;
+
 export const ProductColorSelector = ({
   product,
   selectedColor,
   onSelectColor,
 }: IProductColorSelectorProps) => {
+  if (!product?.variants) return null;
+
   const allColors = product.variants.map((v) => v.color);
   const uniqueColors = Array.from(new Set(allColors));
 
@@ -38,11 +32,11 @@ export const ProductColorSelector = ({
   };
 
   return (
-    <div className="flex flex-row gap-2 grow">
+    <div className="flex flex-row gap-2">
       {uniqueColors.map((colorName) => {
         const isSelected = selectedColor === colorName;
 
-        const hexCode = COLOR_DICTIONARY[colorName];
+        const hexCode = COLOR_DICTIONARY[colorName as AllowedColors];
 
         return (
           <button

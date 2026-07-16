@@ -1,7 +1,7 @@
 import type { IProduct } from "@/services/product";
 import { Link } from "react-router-dom";
 import { ProductColorSelector } from "./ProductColorSelector";
-import { useState } from "react";
+import React, { useState } from "react";
 
 interface IProductCardProps {
   product: IProduct;
@@ -15,6 +15,10 @@ export const ProductCard = ({ product }: IProductCardProps) => {
   const [selectedColor, setSelectedColor] = useState<string>(
     product.variants[0].color,
   );
+
+  const handleSelectColor = (color: string) => {
+    setSelectedColor(color);
+  };
 
   const activeImage =
     product.images.find(
@@ -64,7 +68,7 @@ export const ProductCard = ({ product }: IProductCardProps) => {
         <ProductColorSelector
           product={product}
           selectedColor={selectedColor}
-          onSelectColor={setSelectedColor}
+          onSelectColor={handleSelectColor}
         />
       </div>
     </Link>
