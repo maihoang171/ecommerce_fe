@@ -34,3 +34,8 @@ export const mockProductCardResponse = {
   success: true,
   data: mockProductList[0],
 };
+
+export const mockProductResponse = {
+  success: true,
+  data: mockProductList[0],
+};

@@ -5,15 +5,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Category } from "./Category";
 import { useCategoryStore } from "@/stores/useCategoryStore";
 import { mockCategoryList } from "@/tests/mock/mockData";
+import { useParams } from "react-router-dom";
 
 const mockNavigate = vi.fn();
-const mockUseParams = vi.fn();
 vi.mock("react-router-dom", async () => {
   const actual = await vi.importActual("react-router-dom");
   return {
     ...actual,
     useNavigate: () => mockNavigate,
-    useParams: () => mockUseParams(),
+    useParams: vi.fn(),
   };
 });
 
@@ -49,7 +49,7 @@ describe("category component", () => {
     cleanup();
   });
   it("should navigate to NotFound page when missing or incorrect slug", () => {
-    vi.mocked(mockUseParams).mockReturnValue({
+    vi.mocked(useParams).mockReturnValue({
       parentSlug: "incorrectSlug",
     });
 
@@ -61,7 +61,7 @@ describe("category component", () => {
   });
 
   it("should render CampaignHeroBanner and ParentCategoryDetail on success", () => {
-    vi.mocked(mockUseParams).mockReturnValue({
+    vi.mocked(useParams).mockReturnValue({
       parentSlug: "women",
     });
 

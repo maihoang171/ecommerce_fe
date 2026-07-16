@@ -1,4 +1,7 @@
-import { getProductListByCategorySlugService } from "@/services/product";
+import {
+  getProductListByCategorySlugService,
+  getProductService,
+} from "@/services/product";
 import { useProductStore } from "../stores/useProductStore";
 import { extractErrorMsg } from "@/utils/error";
 import { useState } from "react";
@@ -33,4 +36,36 @@ export const useGetProductList = () => {
   };
 
   return { handleGetProductList, isLoading };
+};
+
+export const useGetProduct = () => {
+  const { setProduct } = useProductStore();
+  const [isLoading, setIsLoading] = useState(false);
+  const [errMsg, setErrMsg] = useState<string | null>(null);
+
+  const handleGetProduct = async (productId: string, categoryId: string) => {
+    setIsLoading(true);
+    try {
+      const res = await getProductService(productId, categoryId);
+      const product = res.data;
+
+      if (!product) {
+        throw Error("Product not found");
+      }
+
+      setErrMsg(null);
+      setProduct(product);
+      return true;
+    } catch (error) {
+      const message = extractErrorMsg(error);
+
+      setErrMsg(message);
+      console.error("Failed to fetch product: " + errMsg);
+
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  return { handleGetProduct, isLoading, errMsg };
 };

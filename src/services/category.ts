@@ -6,6 +6,7 @@ export interface ICategory {
   name: string;
   slug: string;
   imageUrl: string;
+  type?: string;
 }
 
 export interface ICampaign {
@@ -27,4 +28,3 @@ export const getCategoryListService = async () => {
     await axiosClient.get<ApiResponse<IParentCategory[]>>("/category");
   return res.data;
 };
-

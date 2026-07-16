@@ -1,7 +1,7 @@
 import type { IProduct } from "@/services/product";
 import { Link } from "react-router-dom";
 import { ProductColorSelector } from "./ProductColorSelector";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 interface IProductCardProps {
   product: IProduct;
@@ -16,6 +16,10 @@ export const ProductCard = ({ product }: IProductCardProps) => {
     product.variants[0].color,
   );
 
+  const handleSelectColor = (color: string) => {
+    setSelectedColor(color);
+  };
+
   const activeImage =
     product.images.find(
       (img) => img.color === selectedColor && img.isPrimary,
@@ -23,15 +27,10 @@ export const ProductCard = ({ product }: IProductCardProps) => {
     product.images.find((img) => img.color === selectedColor) ||
     product.images[0];
 
-  useEffect(() => {
-    product.images.forEach((image) => {
-      const img = new Image();
-      img.src = image.imageUrl;
-    });
-  }, []);
-
   return (
-    <Link to={`/product?id=${product.id}`}>
+    <Link
+      to={`/product/${product.id}?categoryId=${product.categoryId}&color=${selectedColor}`}
+    >
       <div className="group cursor-pointer aspect-square">
         <div className="relative overflow-hidden ">
           <img
@@ -50,10 +49,10 @@ export const ProductCard = ({ product }: IProductCardProps) => {
           )}
         </div>
 
+        <div className="line-clamp-1">{product.name}</div>
+
         {product.discountPrice ? (
           <div>
-            <div className="line-clamp-1">{product.name}</div>
-
             <div className="flex flex-row gap-5">
               <div className="text-red-500">${product.discountPrice}</div>
 
@@ -62,7 +61,6 @@ export const ProductCard = ({ product }: IProductCardProps) => {
           </div>
         ) : (
           <div>
-            <div className="line-clamp-1">{product.name}</div>
             <div>${product.price}</div>
           </div>
         )}
@@ -70,7 +68,7 @@ export const ProductCard = ({ product }: IProductCardProps) => {
         <ProductColorSelector
           product={product}
           selectedColor={selectedColor}
-          onSelectColor={setSelectedColor}
+          onSelectColor={handleSelectColor}
         />
       </div>
     </Link>

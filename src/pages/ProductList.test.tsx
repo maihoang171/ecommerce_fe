@@ -36,7 +36,7 @@ vi.mock("react-router-dom", async () => {
 
 vi.mock("@/components/Body/ProductCard", () => ({
   ProductCard: () => (
-    <div data-testid="mock-product-detail-component">
+    <div data-testid="mock-product-card-component">
       Fake Product Detail Component
     </div>
   ),
@@ -186,7 +186,7 @@ describe("ProductList", () => {
     );
 
     expect(screen.getByText(/2 products/i)).toBeInTheDocument();
-    expect(screen.getAllByTestId("mock-product-detail-component")).toHaveLength(
+    expect(screen.getAllByTestId("mock-product-card-component")).toHaveLength(
       2,
     );
   });
