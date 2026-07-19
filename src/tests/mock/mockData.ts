@@ -175,6 +175,7 @@ export const mockProductList: IProduct[] = [
         sku: "DRS-FLR-BLU-M",
       },
     ],
+    relatedProducts: []
   },
   {
     id: "prod-2",
@@ -206,97 +207,6 @@ export const mockProductList: IProduct[] = [
         sku: "DRS-SLP-BLK-M",
       },
     ],
-  },
-
-  {
-    id: "prod-3",
-    name: "Ribbed Knit Tank Top",
-    price: 24.99,
-    description: "Essential basic tank for everyday layering.",
-    categoryId: "102",
-    images: [
-      {
-        id: "img-3-a",
-        color: "White",
-        imageUrl: "/assets/products/knit-tank-white.jpg",
-        isPrimary: true,
-      },
-      {
-        id: "img-3-b",
-        color: "Olive",
-        imageUrl: "/assets/products/knit-tank-olive.jpg",
-        isPrimary: false,
-      },
-    ],
-    variants: [
-      {
-        id: "var-3-sm-wht",
-        size: "S",
-        color: "White",
-        stockQuantity: 20,
-        sku: "TNK-RIB-WHT-S",
-      },
-      {
-        id: "var-3-md-wht",
-        size: "M",
-        color: "White",
-        stockQuantity: 25,
-        sku: "TNK-RIB-WHT-M",
-      },
-      {
-        id: "var-3-lg-wht",
-        size: "L",
-        color: "White",
-        stockQuantity: 18,
-        sku: "TNK-RIB-WHT-L",
-      },
-      {
-        id: "var-3-md-olv",
-        size: "M",
-        color: "Olive",
-        stockQuantity: 10,
-        sku: "TNK-RIB-OLV-M",
-      },
-    ],
-  },
-
-  {
-    id: "prod-4",
-    name: "Classic Oxford Shirt",
-    price: 49.99,
-    description:
-      "A timeless, comfortable cotton shirt perfect for everyday wear.",
-    categoryId: "201",
-    images: [
-      {
-        id: "img-4-a",
-        color: "Light Blue",
-        imageUrl: "/assets/products/oxford-shirt-blue.jpg",
-        isPrimary: true,
-      },
-    ],
-    variants: [
-      {
-        id: "var-4-md-blu",
-        size: "M",
-        color: "Light Blue",
-        stockQuantity: 30,
-        sku: "SHT-OXF-BLU-M",
-      },
-      {
-        id: "var-4-lg-blu",
-        size: "L",
-        color: "Light Blue",
-        stockQuantity: 22,
-        sku: "SHT-OXF-BLU-L",
-      },
-      {
-        id: "var-4-xl-blu",
-        size: "XL",
-        color: "Light Blue",
-        stockQuantity: 15,
-        sku: "SHT-OXF-BLU-XL",
-      },
-    ],
+    relatedProducts: []
   },
 ];

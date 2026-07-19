@@ -79,7 +79,6 @@ describe("useGetProductList", () => {
 
 describe("useGetProduct", () => {
   const mockProductId = "1";
-  const mockCategoryId = "5";
 
   const mockSetProduct = vi.fn();
 
@@ -102,7 +101,6 @@ describe("useGetProduct", () => {
     await act(async () => {
       res = await result.current.handleGetProduct(
         mockProductId,
-        mockCategoryId,
       );
     });
 
@@ -115,7 +113,7 @@ describe("useGetProduct", () => {
 
     const { result } = renderHook(() => useGetProduct());
 
-    await result.current.handleGetProduct(mockProductId, mockCategoryId);
+    await result.current.handleGetProduct(mockProductId);
 
     expect(result.current.errMsg).toBe(null);
     expect(mockSetProduct).toHaveBeenCalledWith(mockProductResponse.data);
