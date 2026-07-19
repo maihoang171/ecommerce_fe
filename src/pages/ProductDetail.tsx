@@ -12,35 +12,30 @@ import { Loading } from "@/components/Body/Loading";
 import { ProductSizeSelector } from "@/components/Body/ProductSizeSelector";
 import { ProductCard } from "@/components/Body/ProductCard";
 import type { IProduct } from "@/services/product";
+import { useAddToCart } from "@/hooks/useCart";
+import { useAuthStore } from "@/stores/useAuthStore";
+
 export const ProductDetail = () => {
   const { id } = useParams();
+  const { user } = useAuthStore();
   const navigate = useNavigate();
-
-  const { product, productList, setProduct } = useProductStore();
-
-  const { handleGetProduct, isLoading } = useGetProduct();
-
+  const { product, setProduct } = useProductStore();
+  const { handleGetProduct, isLoadingGetProduct } = useGetProduct();
+  const { handleAddToCart, isLoadingAddToCart, errMsg } = useAddToCart();
   const [searchParams, setSearchParams] = useSearchParams();
-  const categoryId = searchParams.get("categoryId");
   const selectedColor = searchParams.get("color");
   const selectedSize = searchParams.get("size");
 
   useEffect(() => {
     setProduct({} as IProduct);
 
-    if (
-      !id ||
-      isNaN(Number(id)) ||
-      !categoryId ||
-      isNaN(Number(categoryId)) ||
-      !selectedColor
-    ) {
+    if (!id || isNaN(Number(id)) || !selectedColor) {
       navigate("/not-found", { replace: true });
       return;
     }
 
-    handleGetProduct(id, categoryId);
-  }, [id, categoryId, selectedColor]);
+    handleGetProduct(id);
+  }, [id, selectedColor]);
 
   const handleSelectColor = (color: string) => {
     const nextParams = new URLSearchParams(searchParams);
@@ -78,11 +73,21 @@ export const ProductDetail = () => {
       .reduce((total, v) => total + v.stockQuantity, 0);
   }, [product, selectedColor, selectedSize]);
 
-  if (isLoading || !product) {
+  if (isLoadingGetProduct) {
     return <Loading />;
   }
 
-  const relatedProducts = productList.filter((p) => p.id != product.id);
+  const OnAddToCart = () => {
+    handleAddToCart(
+      {
+        userId: Number(user?.id),
+        productId: Number(product.id),
+        color: String(selectedColor),
+        size: String(selectedSize),
+      },
+      product,
+    );
+  };
 
   return (
     <div>
@@ -144,10 +149,19 @@ export const ProductDetail = () => {
               Size guide
             </button>
           </div>
-
+          {errMsg && <p className="text-red-400">{errMsg}</p>}
           {/* Handle add to cart */}
-          <button className="my-4 w-full p-3 bg-black text-white hover:cursor-pointer hover:bg-gray-500 text-xl">
-            Add to cart
+          <button
+            onClick={OnAddToCart}
+            type="submit"
+            className="my-4 w-full p-3 bg-black text-white hover:cursor-pointer hover:bg-gray-500 text-xl disabled:bg-gray-400"
+            disabled={!selectedSize}
+          >
+            {isLoadingAddToCart ? (
+              <div className="loading loading-spinner" />
+            ) : (
+              <p>Add to cart</p>
+            )}
           </button>
         </div>
       </section>
@@ -167,7 +181,7 @@ export const ProductDetail = () => {
             },
           }}
         >
-          {relatedProducts.map((rp) => (
+          {product?.relatedProducts?.map((rp) => (
             <SwiperSlide>
               <div className="p-2">
                 <ProductCard product={rp} />

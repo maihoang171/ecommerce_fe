@@ -27,6 +27,7 @@ export interface IProduct {
   discountEndAt?: string;
   images: IProductImage[];
   variants: IProductVariant[];
+  relatedProducts: IProduct[];
 }
 
 export const getProductListByCategorySlugService = async (
@@ -42,10 +43,8 @@ export const getProductListByCategorySlugService = async (
   return res.data;
 };
 
-export const getProductService = async (id: string, categoryId: string) => {
-  const res = await axiosClient.get<ApiResponse<IProduct>>(
-    `product/${id}?categoryId=${categoryId}`,
-  );
-  
+export const getProductService = async (id: string) => {
+  const res = await axiosClient.get<ApiResponse<IProduct>>(`product/${id}`);
+
   return res.data;
 };

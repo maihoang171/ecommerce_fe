@@ -23,7 +23,7 @@ function App() {
   ) : (
     <div className="h-screen w-full bg-base-100">
       <AppRoute />
-      <Toaster />
+      <Toaster position="top-right" />
     </div>
   );
 }

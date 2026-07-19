@@ -9,6 +9,7 @@ import { useState } from "react";
 export const useGetProductList = () => {
   const { setProductList } = useProductStore();
   const [isLoading, setIsLoading] = useState(false);
+
   const handleGetProductList = async (
     parentSlug: string,
     childSlug?: string,
@@ -40,13 +41,13 @@ export const useGetProductList = () => {
 
 export const useGetProduct = () => {
   const { setProduct } = useProductStore();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingGetProduct, setIsLoadingGetProduct] = useState(false);
   const [errMsg, setErrMsg] = useState<string | null>(null);
 
-  const handleGetProduct = async (productId: string, categoryId: string) => {
-    setIsLoading(true);
+  const handleGetProduct = async (productId: string) => {
+    setIsLoadingGetProduct(true);
     try {
-      const res = await getProductService(productId, categoryId);
+      const res = await getProductService(productId);
       const product = res.data;
 
       if (!product) {
@@ -64,8 +65,8 @@ export const useGetProduct = () => {
 
       return false;
     } finally {
-      setIsLoading(false);
+      setIsLoadingGetProduct(false);
     }
   };
-  return { handleGetProduct, isLoading, errMsg };
+  return { handleGetProduct, isLoadingGetProduct, errMsg };
 };

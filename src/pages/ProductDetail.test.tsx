@@ -64,23 +64,13 @@ describe("product detail component", () => {
   const invalidCases = [
     {
       id: undefined,
-      searchParams: "categoryId=5&color=red",
+      searchParams: "color=red",
       desc: "product id is undefined",
     },
     {
       id: "abc",
-      searchParams: "categoryId=5&color=red",
-      desc: "product id is not a number",
-    },
-    {
-      id: "1",
       searchParams: "color=red",
-      desc: "category id is undefined",
-    },
-    {
-      id: "1",
-      searchParams: "categoryId=abc&color=red",
-      desc: "category id is not a number",
+      desc: "product id is not a number",
     },
   ];
   test.each(invalidCases)(
@@ -101,7 +91,7 @@ describe("product detail component", () => {
 
       vi.mocked(useGetProduct).mockReturnValue({
         handleGetProduct: mockHandleGetProduct,
-        isLoading: false,
+        isLoadingGetProduct: false,
         errMsg: null,
       });
 
@@ -117,50 +107,34 @@ describe("product detail component", () => {
     },
   );
 
-  const testCases = [
-    {
-      isLoading: true,
+  it("should return loading component when isLoading", () => {
+    vi.mocked(useParams).mockReturnValue({ id: "1" });
+
+    vi.mocked(useSearchParams).mockReturnValue([
+      new URLSearchParams("color=Red"),
+      mockSetSearchParams,
+    ]);
+
+    vi.mocked(useProductStore).mockReturnValue({
       product: mockProductList[0],
-      desc: "isLoading is true",
-    },
-    {
-      isLoading: false,
-      product: undefined,
-      desc: "product is undefined",
-    },
-  ];
+      productList: mockProductList,
+      setProduct: vi.fn(),
+    });
 
-  test.each(testCases)(
-    "should return loading component when $desc",
-    ({ isLoading, product }) => {
-      vi.mocked(useParams).mockReturnValue({ id: "1" });
+    vi.mocked(useGetProduct).mockReturnValue({
+      handleGetProduct: vi.fn(),
+      isLoadingGetProduct: true,
+      errMsg: null,
+    });
 
-      vi.mocked(useSearchParams).mockReturnValue([
-        new URLSearchParams("categoryId=3&color=Red"),
-        mockSetSearchParams,
-      ]);
+    render(
+      <MemoryRouter>
+        <ProductDetail />
+      </MemoryRouter>,
+    );
 
-      vi.mocked(useProductStore).mockReturnValue({
-        product,
-        productList: mockProductList,
-        setProduct: vi.fn(),
-      });
-
-      vi.mocked(useGetProduct).mockReturnValue({
-        handleGetProduct: vi.fn(),
-        isLoading,
-        errMsg: null,
-      });
-
-      render(
-        <MemoryRouter>
-          <ProductDetail />
-        </MemoryRouter>,
-      );
-
-      expect(screen.getByTestId("loading-component")).toBeInTheDocument();
-    },
-  );
+    expect(screen.getByTestId("loading-component")).toBeInTheDocument();
+  });
 
   it("should display correct stock quantity when a size is selected", async () => {
     vi.mocked(useParams).mockReturnValue({ id: "1" });
@@ -171,7 +145,7 @@ describe("product detail component", () => {
     });
     vi.mocked(useGetProduct).mockReturnValue({
       handleGetProduct: mockHandleGetProduct,
-      isLoading: false,
+      isLoadingGetProduct: false,
       errMsg: null,
     });
     const searchParams = "categoryId=4&color=Red&size=M";
@@ -198,7 +172,7 @@ describe("product detail component", () => {
     });
     vi.mocked(useGetProduct).mockReturnValue({
       handleGetProduct: mockHandleGetProduct,
-      isLoading: false,
+      isLoadingGetProduct: false,
       errMsg: null,
     });
     const searchParams = "categoryId=4&color=Red&size=ABC"; //invalid size
@@ -225,7 +199,7 @@ describe("product detail component", () => {
     });
     vi.mocked(useGetProduct).mockReturnValue({
       handleGetProduct: mockHandleGetProduct,
-      isLoading: false,
+      isLoadingGetProduct: false,
       errMsg: null,
     });
     const searchParams = "categoryId=4&color=Red";
@@ -255,7 +229,7 @@ describe("product detail component", () => {
     });
     vi.mocked(useGetProduct).mockReturnValue({
       handleGetProduct: mockHandleGetProduct,
-      isLoading: false,
+      isLoadingGetProduct: false,
       errMsg: null,
     });
 
@@ -291,7 +265,7 @@ describe("product detail component", () => {
     });
     vi.mocked(useGetProduct).mockReturnValue({
       handleGetProduct: mockHandleGetProduct,
-      isLoading: false,
+      isLoadingGetProduct: false,
       errMsg: null,
     });
 
@@ -327,7 +301,7 @@ describe("product detail component", () => {
     });
     vi.mocked(useGetProduct).mockReturnValue({
       handleGetProduct: mockHandleGetProduct,
-      isLoading: false,
+      isLoadingGetProduct: false,
       errMsg: null,
     });
 
