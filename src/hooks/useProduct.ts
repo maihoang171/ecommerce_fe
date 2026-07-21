@@ -21,7 +21,7 @@ export const useGetProductList = () => {
         childSlug,
       );
 
-      const productList = res.data;
+      const productList = res;
       if (!productList) {
         throw Error("Product list not found");
       }

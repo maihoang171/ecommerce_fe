@@ -1,59 +1,38 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useParams } from "react-router-dom";
 import { Menu, X } from "lucide-react";
-import { useCategoryStore } from "@/stores/useCategoryStore";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useGetCategoryList } from "@/hooks/useCategory";
 import { useNavigate } from "react-router-dom";
 import type { ICategory, IParentCategory } from "@/services/category";
+import { ServerError } from "@/pages/ServerError";
 
 export const CategoryNav = () => {
-  const { handleGetCategoryList } = useGetCategoryList();
-
-  useEffect(() => {
-    handleGetCategoryList();
-  }, []);
-
-  const {
-    categoryList,
-    activeParentCategory,
-    setActiveParentCategory,
-    setActiveChildCategory,
-  } = useCategoryStore();
-
+  const { parentSlug } = useParams<{ parentSlug?: string }>();
+  const { data: categoryList = [], isError } = useGetCategoryList();
   const navigate = useNavigate();
-
   const [isOpenMenu, setIsOpenMenu] = useState(false);
-
   const [hoveredSlug, setHoveredSlug] = useState<string | null>(null);
 
-  const displayCategory = hoveredSlug
-    ? categoryList.find((c) => c.slug === hoveredSlug)
-    : activeParentCategory;
+  const categories = categoryList as IParentCategory[];
+
+  const activeCategorySlug = hoveredSlug || parentSlug;
+
+  if (isError) return <ServerError />;
+
+  const displayCategory = categories.find((c) => c.slug === activeCategorySlug);
 
   const handleSelectCategory = (category: IParentCategory) => {
-    setActiveParentCategory(category);
+    setHoveredSlug(category.slug);
     navigate(`/${category.slug}`);
   };
 
   const handleClickChildCategory = (child: ICategory) => {
-    /* v8 ignore next 3 */
-    if (displayCategory) {
-      setActiveParentCategory(displayCategory);
-    }
-
-    setActiveChildCategory(child);
     setIsOpenMenu(false);
     navigate(`/${displayCategory?.slug}/${child.slug}`);
   };
 
   const handleClickCampaign = () => {
-    /* v8 ignore next 3 */
-    if (displayCategory) {
-      setActiveParentCategory(displayCategory);
-    }
-
     setIsOpenMenu(false);
-    setActiveChildCategory(undefined);
   };
 
   const handleOnMouseEnter = (category: IParentCategory) => {
@@ -82,10 +61,10 @@ export const CategoryNav = () => {
           className={`fixed top-14 left-0 border-b h-full w-full bg-white ${isOpenMenu ? "opacity-100 visible translate-y-0" : "opacity-0 invisible -translate-y-2"} duration-300 ease-in-out`}
         >
           <div className="flex flex-row justify-between px-5 py-2 gap-2 border-b border-gray-300">
-            {categoryList.map((c) => {
+            {categories.map((c) => {
               const isHighlighted = hoveredSlug
                 ? hoveredSlug === c.slug
-                : activeParentCategory?.slug === c.slug;
+                : displayCategory?.slug === c.slug;
               return (
                 <button
                   key={c.id}
@@ -99,7 +78,7 @@ export const CategoryNav = () => {
           </div>
 
           <div className="flex flex-col p-5 gap-2 items-start">
-            {activeParentCategory?.campaigns.map((c) => (
+            {displayCategory?.campaigns.map((c) => (
               <NavLink
                 key={c.id}
                 className="hover:text-gray-500 font-semibold"
@@ -110,7 +89,7 @@ export const CategoryNav = () => {
               </NavLink>
             ))}
 
-            {activeParentCategory?.children.map((child) => (
+            {displayCategory?.children.map((child) => (
               <button
                 key={child.id}
                 className="hover:text-gray-500 cursor-pointer "
@@ -125,10 +104,10 @@ export const CategoryNav = () => {
 
       {/* =======DESKTOP ONLY: Tabs */}
       <div className="hidden md:flex flex-row gap-3">
-        {categoryList.map((c) => {
+        {categories.map((c) => {
           const isHighlighted = hoveredSlug
             ? hoveredSlug === c.slug
-            : activeParentCategory?.slug === c.slug;
+            : displayCategory?.slug === c.slug;
           return (
             <div
               key={c.id}

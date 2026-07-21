@@ -1,24 +1,33 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { useCategoryStore } from "../stores/useCategoryStore";
 import { CampaignHeroBanner } from "@/components/Body/CampaignHeroBanner";
 import { ParentCategoryDetail } from "@/components/Body/ParentCategoryDetail";
+import type { IParentCategory } from "@/services/category";
+import { useEffect } from "react";
+import { ServerError } from "./ServerError";
+import { useGetCategoryList } from "@/hooks/useCategory";
 
 export const Category = () => {
-  const { parentSlug } = useParams();
-  const { categoryList } = useCategoryStore();
-  const currentCategory = categoryList.find((c) => c.slug === parentSlug);
+  const { parentSlug } = useParams<{ parentSlug?: string }>();
+  const { data: categoryList = [], isLoading, isError } = useGetCategoryList();
+
+  const currentCategory = (categoryList as IParentCategory[]).find(
+    (c) => c.slug === parentSlug,
+  ) as IParentCategory;
 
   const navigate = useNavigate();
 
-  if (!currentCategory) {
-    navigate("/not-found", { replace: true });
-    return null;
-  }
+  useEffect(() => {
+    if (!isLoading && !currentCategory) {
+      navigate("/not-found", { replace: true });
+    }
+  }, [isLoading, currentCategory, navigate]);
+
+  if (isError) return <ServerError />;
 
   return (
     <div>
       <div className="hero-banner-container">
-        {currentCategory.campaigns.map((campaign) => (
+        {currentCategory?.campaigns?.map((campaign) => (
           <div key={campaign.id}>
             <CampaignHeroBanner campaign={campaign} />
           </div>

@@ -23,8 +23,8 @@ export interface IParentCategory extends ICategory {
   campaigns: ICampaign[];
 }
 
-export const getCategoryListService = async () => {
+export const getCategoryListService = async (): Promise<IParentCategory[]> => {
   const res =
     await axiosClient.get<ApiResponse<IParentCategory[]>>("/category");
-  return res.data;
+  return res.data.data ?? [];
 };

@@ -33,14 +33,14 @@ export interface IProduct {
 export const getProductListByCategorySlugService = async (
   parentSlug: string,
   childSlug?: string,
-) => {
+): Promise<IProduct[]> => {
   const url = childSlug
     ? `category/${parentSlug}/${childSlug}`
     : `category/${parentSlug}`;
 
   const res = await axiosClient.get<ApiResponse<IProduct[]>>(url);
 
-  return res.data;
+  return res.data.data ?? [];
 };
 
 export const getProductService = async (id: string) => {

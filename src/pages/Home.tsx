@@ -3,6 +3,7 @@ import { CampaignHeroBanner } from "@/components/Body/CampaignHeroBanner";
 import { useCampaignStore } from "@/stores/useCampaignStore";
 import { useGetCampaignList } from "@/hooks/useCampaign";
 import { Loading } from "@/components/Body/Loading";
+import { ServerError } from "./ServerError";
 
 export const Home = () => {
   const { campaignList } = useCampaignStore();
@@ -12,10 +13,10 @@ export const Home = () => {
     handleGetCampaignList();
   }, []);
 
-  if(isLoading){
-    return <Loading />
+  if (isLoading) {
+    return <Loading />;
   }
-  
+
   if (campaignList.length > 0) {
     return (
       <div className="hero-banner-container">
@@ -28,12 +29,5 @@ export const Home = () => {
     );
   }
 
-  return (
-    <div className="w-full min-h-[70vh] flex flex-col justify-center items-center bg-base-100">
-      <h2 className="text-2xl font-bold">Welcome to XuXi Clothes</h2>
-      <p className="text-gray-500 mt-2">
-        We are currently updating our catalog. Check back soon!
-      </p>
-    </div>
-  );
+  return <ServerError />;
 };
