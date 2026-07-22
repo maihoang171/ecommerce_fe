@@ -9,7 +9,7 @@ interface ICampaign {
   linkUrl: string;
 }
 
-export const getCampaignListService = async () => {
+export const getCampaignListService = async (): Promise<ICampaign[]> => {
   const res = await axiosClient.get<ApiResponse<ICampaign[]>>("/campaign");
-  return res.data;
+  return res.data.data ?? [];
 };

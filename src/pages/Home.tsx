@@ -1,17 +1,12 @@
-import { useEffect } from "react";
 import { CampaignHeroBanner } from "@/components/Body/CampaignHeroBanner";
-import { useCampaignStore } from "@/stores/useCampaignStore";
 import { useGetCampaignList } from "@/hooks/useCampaign";
 import { Loading } from "@/components/Body/Loading";
 import { ServerError } from "./ServerError";
+import type { ICampaign } from "@/services/category";
 
 export const Home = () => {
-  const { campaignList } = useCampaignStore();
-  const { handleGetCampaignList, isLoading } = useGetCampaignList();
-
-  useEffect(() => {
-    handleGetCampaignList();
-  }, []);
+  const { data: campaigns, isLoading } = useGetCampaignList();
+  const campaignList = campaigns as ICampaign[];
 
   if (isLoading) {
     return <Loading />;

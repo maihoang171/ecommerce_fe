@@ -36,3 +36,4 @@ export const useAddToCart = () => {
 
   return { isLoadingAddToCart, handleAddToCart, errMsg };
 };
+
