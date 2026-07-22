@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { baseAuthSchema, type LoginInput } from "@/schemas/authSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useAuthModalStore } from "@/stores/useAuthModelStore";
+import { useAuthModalStore } from "@/stores/useAuthModalStore";
 import { useLogin } from "@/hooks/useAuth";
 import { Loading } from "../Body/Loading";
 

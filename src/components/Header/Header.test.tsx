@@ -6,7 +6,7 @@ import { Header } from "./Header";
 import { MemoryRouter } from "react-router-dom";
 import userEvent from "@testing-library/user-event";
 import { useAuthStore } from "@/stores/useAuthStore";
-import { useAuthModalStore } from "@/stores/useAuthModelStore";
+import { useAuthModalStore } from "@/stores/useAuthModalStore";
 
 const renderHeader = () => {
   const renderResult = render(

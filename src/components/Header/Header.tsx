@@ -1,16 +1,14 @@
 import { Link } from "react-router-dom";
 import logo from "@/assets/logo.png";
-import { User, Handbag, Search, X } from "lucide-react";
-import { Login } from "../AuthModals/Login";
-import { Register } from "../AuthModals/Register";
-import { useAuthModalStore } from "@/stores/useAuthModelStore";
+import { User, Handbag, Search } from "lucide-react";
+import { useAuthModalStore } from "@/stores/useAuthModalStore";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { getInitials } from "@/utils/auth";
 import { useLogout } from "@/hooks/useAuth";
 import { CategoryNav } from "./CategoryNav";
 
 export const Header = () => {
-  const { authMode, openLogin, close } = useAuthModalStore();
+  const { openLogin } = useAuthModalStore();
 
   const { user, isLoggedIn } = useAuthStore();
   const { handleLogout } = useLogout();
@@ -107,31 +105,6 @@ export const Header = () => {
           </div>
         </nav>
       </header>
-
-      {/* LOGIN MODAL */}
-      <div
-        data-testid="login-modal"
-        className={`modal ${authMode === "login" ? "modal-open" : ""}`}
-      >
-        <div className="modal-box border border-base-300 bg-base-100">
-          <button
-            onClick={close}
-            className="btn btn-sm btn-circle absolute right-2 top-2"
-          >
-            <X />
-          </button>
-          <Login />
-        </div>
-        <div className="modal-backdrop" onClick={close} />
-      </div>
-
-      {/* REGISTER MODAL */}
-      <div className={`modal ${authMode === "register" ? "modal-open" : ""}`}>
-        <div className="modal-box border border-base-300 bg-base-100">
-          <Register />
-        </div>
-        <div className="modal-backdrop" onClick={close} />
-      </div>
     </>
   );
 };
