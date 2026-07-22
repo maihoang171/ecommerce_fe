@@ -8,7 +8,7 @@ import { useGetCategoryList } from "@/hooks/useCategory";
 
 export const Category = () => {
   const { parentSlug } = useParams<{ parentSlug?: string }>();
-  const { data: categoryList = [], isLoading, isError } = useGetCategoryList();
+  const { data: categoryList = [], isLoading, isError, error } = useGetCategoryList();
 
   const currentCategory = (categoryList as IParentCategory[]).find(
     (c) => c.slug === parentSlug,
@@ -22,7 +22,7 @@ export const Category = () => {
     }
   }, [isLoading, currentCategory, navigate]);
 
-  if (isError) return <ServerError />;
+  if (isError) return <ServerError message={error.message}/>;
 
   return (
     <div>

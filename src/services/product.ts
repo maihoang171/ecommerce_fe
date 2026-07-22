@@ -43,8 +43,13 @@ export const getProductListByCategorySlugService = async (
   return res.data.data ?? [];
 };
 
-export const getProductService = async (id: string) => {
+export const getProductService = async (id: string): Promise<IProduct> => {
   const res = await axiosClient.get<ApiResponse<IProduct>>(`product/${id}`);
 
-  return res.data;
+  const product = res.data.data;
+  if (!product) {
+    throw new Error(`Product with ID ${id} not found`);
+  }
+
+  return product;
 };

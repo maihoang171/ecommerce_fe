@@ -1,5 +1,4 @@
 import { useGetProduct } from "@/hooks/useProduct";
-import { useProductStore } from "@/stores/useProductStore";
 import { useEffect, useMemo } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ProductColorSelector } from "@/components/Body/ProductColorSelector";
@@ -18,23 +17,23 @@ import { useAuthStore } from "@/stores/useAuthStore";
 export const ProductDetail = () => {
   const { id } = useParams();
   const { user } = useAuthStore();
+
   const navigate = useNavigate();
-  const { product, setProduct } = useProductStore();
-  const { handleGetProduct, isLoadingGetProduct } = useGetProduct();
+
+  const { data: product, isLoading, isError, error } = useGetProduct(id ?? "");
+  const currentProduct = product as IProduct;
+
   const { handleAddToCart, isLoadingAddToCart, errMsg } = useAddToCart();
+
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedColor = searchParams.get("color");
   const selectedSize = searchParams.get("size");
 
   useEffect(() => {
-    setProduct({} as IProduct);
-
     if (!id || isNaN(Number(id)) || !selectedColor) {
       navigate("/not-found", { replace: true });
       return;
     }
-
-    handleGetProduct(id);
   }, [id, selectedColor]);
 
   const handleSelectColor = (color: string) => {
@@ -73,19 +72,23 @@ export const ProductDetail = () => {
       .reduce((total, v) => total + v.stockQuantity, 0);
   }, [product, selectedColor, selectedSize]);
 
-  if (isLoadingGetProduct) {
+  if (isLoading) {
     return <Loading />;
+  }
+
+  if (isError) {
+    return <div className="text-red">{error.message}</div>;
   }
 
   const OnAddToCart = () => {
     handleAddToCart(
       {
         userId: Number(user?.id),
-        productId: Number(product.id),
+        productId: Number(currentProduct.id),
         color: String(selectedColor),
         size: String(selectedSize),
       },
-      product,
+      currentProduct,
     );
   };
 
@@ -111,16 +114,18 @@ export const ProductDetail = () => {
         </Swiper>
 
         <div className="flex-1 mt-5 space-y-5 md:px-12 ">
-          <div className="font-bold text-2xl">{product.name}</div>
+          <div className="font-bold text-2xl">{currentProduct.name}</div>
 
-          {product.discountPrice ? (
+          {currentProduct.discountPrice ? (
             <div className="flex flex-row gap-5">
-              <div className="text-red-500">${product.discountPrice}</div>
-              <div className="line-through">${product.price}</div>
+              <div className="text-red-500">
+                ${currentProduct.discountPrice}
+              </div>
+              <div className="line-through">${currentProduct.price}</div>
             </div>
           ) : (
             <div>
-              <div data-testid="original-price">${product.price}</div>
+              <div data-testid="original-price">${currentProduct.price}</div>
             </div>
           )}
 
@@ -131,13 +136,13 @@ export const ProductDetail = () => {
           </div>
 
           <ProductColorSelector
-            product={product}
+            product={currentProduct}
             selectedColor={selectedColor || ""}
             onSelectColor={handleSelectColor}
           />
 
           <ProductSizeSelector
-            product={product}
+            product={currentProduct}
             selectedColor={selectedColor || ""}
             selectedSize={selectedSize || ""}
             onSelectSize={handleSelectSize}

@@ -17,12 +17,12 @@ export const ProductList = () => {
   const {
     data: products,
     isLoading,
+    isError,
     error,
   } = useGetProductList(parentSlug ?? "", childSlug);
 
   const categories = (categoryList as IParentCategory[]) || [];
   const currentCategoryList = categories.find((c) => c.slug === parentSlug);
-
   const productList = (products as IProduct[]) || [];
 
   const currentChildCategory = currentCategoryList?.children?.find(
@@ -30,8 +30,9 @@ export const ProductList = () => {
   );
 
   const navigate = useNavigate();
-  if (error) {
-    return <ServerError />;
+
+  if (isError) {
+    return <ServerError message={error.message} />;
   }
 
   if (isLoading) return <Loading />;
