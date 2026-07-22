@@ -5,17 +5,17 @@ import { ServerError } from "./ServerError";
 import type { ICampaign } from "@/services/category";
 
 export const Home = () => {
-  const { data: campaigns, isLoading } = useGetCampaignList();
-  const campaignList = campaigns as ICampaign[];
+  const { data: campaignList, isLoading } = useGetCampaignList();
+  const currentCampaignList = campaignList as ICampaign[];
 
   if (isLoading) {
     return <Loading />;
   }
 
-  if (campaignList.length > 0) {
+  if (currentCampaignList.length > 0) {
     return (
       <div className="hero-banner-container">
-        {campaignList.map((c) => (
+        {currentCampaignList.map((c) => (
           <div key={c.id}>
             <CampaignHeroBanner campaign={c} />
           </div>
