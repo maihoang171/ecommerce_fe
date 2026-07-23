@@ -20,8 +20,15 @@ export interface IAddToCartPayLoad {
   size: string;
 }
 
-export const addToCartService = async (payload: IAddToCartPayLoad) => {
+export const addToCartService = async (
+  payload: IAddToCartPayLoad,
+): Promise<ICart> => {
   const res = await axiosClient.post<ApiResponse<ICart>>("/cart", payload);
 
-  return res.data;
+  const cart = res.data.data;
+  if (!cart) {
+    throw new Error("Some thing went wrong went add item to cart!");
+  }
+
+  return cart;
 };

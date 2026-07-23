@@ -13,6 +13,9 @@ import { ProductCard } from "@/components/Body/ProductCard";
 import type { IProduct } from "@/services/product";
 import { useAddToCart } from "@/hooks/useCart";
 import { useAuthStore } from "@/stores/useAuthStore";
+import type { IAddToCartPayLoad } from "@/services/cart";
+import { ServerError } from "./ServerError";
+import { extractErrorMsg } from "@/utils/error";
 
 export const ProductDetail = () => {
   const { id } = useParams();
@@ -20,14 +23,22 @@ export const ProductDetail = () => {
 
   const navigate = useNavigate();
 
-  const { data: product, isLoading, isError, error } = useGetProduct(id ?? "");
+  const {
+    data: product,
+    isPending: isGetProductPending,
+    isError: isErrorGetProduct,
+    error: getProductError,
+  } = useGetProduct(id ?? "");
   const currentProduct = product as IProduct;
-
-  const { handleAddToCart, isLoadingAddToCart, errMsg } = useAddToCart();
-
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedColor = searchParams.get("color");
   const selectedSize = searchParams.get("size");
+
+  const {
+    mutate: handleAddToCart,
+    isPending: isAddToCartPending,
+    error: addToCartError,
+  } = useAddToCart();
 
   useEffect(() => {
     if (!id || isNaN(Number(id)) || !selectedColor) {
@@ -36,6 +47,18 @@ export const ProductDetail = () => {
     }
   }, [id, selectedColor]);
 
+  const onAddToCart = () => {
+    if (!product) return;
+
+    const payload: IAddToCartPayLoad = {
+      userId: Number(user?.id),
+      productId: Number(product?.id),
+      color: selectedColor ?? "",
+      size: selectedSize ?? "",
+    };
+
+    handleAddToCart({ payload, product });
+  };
   const handleSelectColor = (color: string) => {
     const nextParams = new URLSearchParams(searchParams);
 
@@ -72,25 +95,14 @@ export const ProductDetail = () => {
       .reduce((total, v) => total + v.stockQuantity, 0);
   }, [product, selectedColor, selectedSize]);
 
-  if (isLoading) {
+  if (isGetProductPending) {
     return <Loading />;
   }
 
-  if (isError) {
-    return <div className="text-red">{error.message}</div>;
+  if (isErrorGetProduct) {
+    const msg = extractErrorMsg(getProductError);
+    return <ServerError message={msg} />;
   }
-
-  const OnAddToCart = () => {
-    handleAddToCart(
-      {
-        userId: Number(user?.id),
-        productId: Number(currentProduct.id),
-        color: String(selectedColor),
-        size: String(selectedSize),
-      },
-      currentProduct,
-    );
-  };
 
   return (
     <div>
@@ -154,15 +166,20 @@ export const ProductDetail = () => {
               Size guide
             </button>
           </div>
-          {errMsg && <p className="text-red-400">{errMsg}</p>}
+
+          {addToCartError && (
+            <div className="text-red-400 text-center">
+              {addToCartError.message}
+            </div>
+          )}
           {/* Handle add to cart */}
           <button
-            onClick={OnAddToCart}
+            onClick={onAddToCart}
             type="submit"
             className="my-4 w-full p-3 bg-black text-white hover:cursor-pointer hover:bg-gray-500 text-xl disabled:bg-gray-400"
             disabled={!selectedSize}
           >
-            {isLoadingAddToCart ? (
+            {isAddToCartPending ? (
               <div className="loading loading-spinner" />
             ) : (
               <p>Add to cart</p>

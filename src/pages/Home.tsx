@@ -3,6 +3,7 @@ import { useGetCampaignList } from "@/hooks/useCampaign";
 import { Loading } from "@/components/Body/Loading";
 import { ServerError } from "./ServerError";
 import type { ICampaign } from "@/services/category";
+import { extractErrorMsg } from "@/utils/error";
 
 export const Home = () => {
   const {
@@ -18,8 +19,9 @@ export const Home = () => {
   }
 
   if (isError) {
-    return <ServerError message={error.message} />;
-  }
+     const msg = extractErrorMsg(error)
+     return <ServerError message={msg} />;
+   }
 
   if (currentCampaignList.length > 0) {
     return (

@@ -6,6 +6,8 @@ import { useAuthStore } from "@/stores/useAuthStore";
 import { getInitials } from "@/utils/auth";
 import { useLogout } from "@/hooks/useAuth";
 import { CategoryNav } from "./CategoryNav";
+import { LoginModal } from "./LoginModal";
+import { RegisterModal } from "./RegisterModal";
 
 export const Header = () => {
   const { openLogin } = useAuthModalStore();
@@ -104,6 +106,9 @@ export const Header = () => {
             </div>
           </div>
         </nav>
+
+        <LoginModal/>
+        <RegisterModal/>
       </header>
     </>
   );

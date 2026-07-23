@@ -6,6 +6,7 @@ import type { IProduct } from "@/services/product";
 import { ServerError } from "./ServerError";
 import { useGetCategoryList } from "@/hooks/useCategory";
 import type { IParentCategory } from "@/services/category";
+import { extractErrorMsg } from "@/utils/error";
 
 export const ProductList = () => {
   const { parentSlug, childSlug } = useParams<{
@@ -31,9 +32,10 @@ export const ProductList = () => {
 
   const navigate = useNavigate();
 
-  if (isError) {
-    return <ServerError message={error.message} />;
-  }
+   if (isError) {
+      const msg = extractErrorMsg(error)
+      return <ServerError message={msg} />;
+    }
 
   if (isLoading) return <Loading />;
 

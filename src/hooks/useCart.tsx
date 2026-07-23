@@ -1,39 +1,31 @@
 import { CartToast } from "@/components/Body/CartToast";
+import { queryClient } from "@/main";
 import { addToCartService, type IAddToCartPayLoad } from "@/services/cart";
 import type { IProduct } from "@/services/product";
 import { extractErrorMsg } from "@/utils/error";
-import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+interface ICartVariables {
+  payload: IAddToCartPayLoad,
+  product: IProduct
+}
 export const useAddToCart = () => {
-  const [isLoadingAddToCart, setIsLoadingAddToCart] = useState(false);
-  const [errMsg, setErrMsg] = useState("");
-  const handleAddToCart = async (
-    payload: IAddToCartPayLoad,
-    product: IProduct,
-  ) => {
-    try {
-      setIsLoadingAddToCart(true);
-      await addToCartService(payload);
-
+  return useMutation({
+    mutationFn: (variables: ICartVariables) => addToCartService(variables.payload),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
       toast.custom(() => (
         <CartToast
-          product={product}
-          color={payload.color}
-          size={payload.size}
+          product={variables.product}
+          color={variables.payload.color}
+          size={variables.payload.size}
         />
       ));
-
-      setErrMsg("");
-    } catch (error) {
-      setErrMsg(extractErrorMsg(error));
-
-      console.error("Failed when add to cart: " + errMsg);
-    } finally {
-      setIsLoadingAddToCart(false);
-    }
-  };
-
-  return { isLoadingAddToCart, handleAddToCart, errMsg };
+    },
+    onError: (err) => {
+      const msg = extractErrorMsg(err);
+      console.error("Failed to add item to cart: " + msg);
+    },
+  });
 };
-

@@ -5,10 +5,16 @@ import type { IParentCategory } from "@/services/category";
 import { useEffect } from "react";
 import { ServerError } from "./ServerError";
 import { useGetCategoryList } from "@/hooks/useCategory";
+import { extractErrorMsg } from "@/utils/error";
 
 export const Category = () => {
   const { parentSlug } = useParams<{ parentSlug?: string }>();
-  const { data: categoryList = [], isLoading, isError, error } = useGetCategoryList();
+  const {
+    data: categoryList = [],
+    isLoading,
+    isError,
+    error,
+  } = useGetCategoryList();
 
   const currentCategory = (categoryList as IParentCategory[]).find(
     (c) => c.slug === parentSlug,
@@ -22,7 +28,10 @@ export const Category = () => {
     }
   }, [isLoading, currentCategory, navigate]);
 
-  if (isError) return <ServerError message={error.message}/>;
+  if (isError) {
+    const msg = extractErrorMsg(error);
+    return <ServerError message={msg} />;
+  }
 
   return (
     <div>
