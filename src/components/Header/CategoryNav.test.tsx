@@ -4,14 +4,9 @@ import { afterEach, beforeEach, describe, vi, it, expect } from "vitest";
 import { cleanup, render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { CategoryNav } from "../Header/CategoryNav";
-import { useCategoryStore } from "@/stores/useCategoryStore";
 import userEvent from "@testing-library/user-event";
 import { useGetCategoryList } from "@/hooks/useCategory";
 import { mockCategoryList } from "@/tests/mock/mockData";
-
-vi.mock("@/stores/useCategoryStore", () => ({
-  useCategoryStore: vi.fn(),
-}));
 
 vi.mock("@/hooks/useCategory", () => ({
   useGetCategoryList: vi.fn(),
@@ -26,10 +21,13 @@ vi.mock("react-router-dom", async () => {
   };
 });
 
-describe("categoryNav component", () => {
-  const mockSetActiveParentCategory = vi.fn();
-  const mockSetActiveChildCategory = vi.fn();
+vi.mock("@/pages/ServerError", () => ({
+  ServerError: () => (
+    <div data-testid="server-error">Mock Server error component</div>
+  ),
+}));
 
+describe("categoryNav component", () => {
   const setup = () => {
     const user = userEvent.setup();
     render(
@@ -52,24 +50,32 @@ describe("categoryNav component", () => {
     vi.clearAllMocks();
 
     vi.mocked(useGetCategoryList).mockReturnValue({
-      handleGetCategoryList: vi.fn(),
-      isLoading: false
-    });
-
-    vi.mocked(useCategoryStore).mockReturnValue({
-      categoryList: mockCategoryList,
-      activeParentCategory: mockCategoryList[0],
-      setActiveParentCategory: mockSetActiveParentCategory,
-      setActiveChildCategory: mockSetActiveChildCategory,
-    });
+      data: mockCategoryList,
+      isError: false,
+    } as unknown as ReturnType<typeof useGetCategoryList>);
   });
 
   afterEach(() => {
     cleanup();
   });
 
+  it("should return ServerError component when an error occurred", async () => {
+    vi.mocked(useGetCategoryList).mockReturnValue({
+      data: [],
+      isError: true,
+    } as unknown as ReturnType<typeof useGetCategoryList>);
+
+    render(
+      <MemoryRouter>
+        <CategoryNav />
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByTestId("server-error")).toBeInTheDocument();
+  });
+
   describe("mobile only", () => {
-    it("should set active parent category on click and navigate to the category page", async () => {
+    it("should navigate to the category page on click", async () => {
       const { user, getOpenMenuBtn, getWomenBtns, getMenBtns } = setup();
 
       await user.click(getOpenMenuBtn());
@@ -81,10 +87,6 @@ describe("categoryNav component", () => {
       expect(menBtn.className).toContain("text-gray-500");
 
       await user.click(menBtn);
-
-      expect(mockSetActiveParentCategory).toHaveBeenCalledWith(
-        mockCategoryList[1],
-      );
 
       expect(mockNavigate).toHaveBeenCalledWith("/men");
     });
@@ -120,7 +122,7 @@ describe("categoryNav component", () => {
     it("should close the menu when clicking a campaign or a child link", async () => {
       const { user, getOpenMenuBtn, getCloseMenuBtn } = setup();
 
-      //campaign
+      // Campaign
       await user.click(getOpenMenuBtn());
 
       expect(getCloseMenuBtn()).toBeInTheDocument();
@@ -132,7 +134,7 @@ describe("categoryNav component", () => {
 
       expect(getOpenMenuBtn()).toBeInTheDocument();
 
-      //child link
+      // Child link
       await user.click(getOpenMenuBtn());
       expect(getCloseMenuBtn()).toBeInTheDocument();
 
@@ -152,12 +154,9 @@ describe("categoryNav component", () => {
 
       await user.click(menBtn);
 
-      expect(mockSetActiveParentCategory).toHaveBeenCalledWith(
-        mockCategoryList[1],
-      );
       expect(mockNavigate).toHaveBeenCalledWith("/men");
 
-      //test user click child category link
+      // Test user click child category link
       await user.hover(menBtn);
 
       const childLink = screen.getAllByRole("button", { name: /Shirts/i })[1];

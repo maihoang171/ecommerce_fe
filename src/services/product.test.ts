@@ -1,0 +1,76 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { axiosClient } from "./axios";
+import {
+  getProductListByCategorySlugService,
+  getProductService,
+} from "./product";
+import { mockProductList } from "@/tests/mock/mockData";
+
+vi.mock("./axios", () => ({
+  axiosClient: {
+    get: vi.fn(),
+  },
+}));
+
+describe("product service", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  describe("getProductListByCategorySlugService", () => {
+    const mockParentSlug = "Women";
+    const mockChildSlug = "Jeans";
+
+    it("should use url without childSlug and throw error when no products found", async () => {
+      const mockUrl = `category/${mockParentSlug}`;
+      vi.mocked(axiosClient.get).mockResolvedValueOnce({
+        data: { success: false, data: null },
+      });
+
+      await expect(
+        getProductListByCategorySlugService(mockParentSlug),
+      ).rejects.toThrow("Failed to fetch product list!");
+
+      expect(axiosClient.get).toHaveBeenCalledWith(mockUrl);
+    });
+
+    it("should use url with child slug and return product list on success", async () => {
+      const mockUrl = `category/${mockParentSlug}/${mockChildSlug}`;
+
+      vi.mocked(axiosClient.get).mockResolvedValueOnce({
+        data: { success: true, data: mockProductList },
+      });
+
+      const result = await getProductListByCategorySlugService(
+        mockParentSlug,
+        mockChildSlug,
+      );
+
+      expect(result).toEqual(mockProductList);
+      expect(axiosClient.get).toHaveBeenCalledWith(mockUrl);
+    });
+  });
+
+  describe("getProductService", () => {
+    it("should fetch and return product data successfully when response is valid", async () => {
+      vi.mocked(axiosClient.get).mockResolvedValueOnce({
+        data: { data: mockProductList[0] },
+      });
+
+      const result = await getProductService("1");
+
+      expect(axiosClient.get).toHaveBeenCalledWith("product/1");
+      expect(result).toEqual(mockProductList[0]);
+    });
+
+    it("should throw an error if the product data is missing in the response", async () => {
+      vi.mocked(axiosClient.get).mockResolvedValueOnce({
+        data: { data: null },
+      });
+
+      await expect(getProductService("999")).rejects.toThrow(
+        "Product with ID 999 not found",
+      );
+    });
+  });
+});

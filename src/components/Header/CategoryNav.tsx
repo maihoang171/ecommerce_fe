@@ -19,7 +19,8 @@ export const CategoryNav = () => {
 
   if (isError) return <ServerError />;
 
-  const displayCategory = categories.find((c) => c.slug === activeCategorySlug);
+  const displayCategory =
+    categories.find((c) => c.slug === activeCategorySlug) ?? categories[0];
 
   const handleSelectCategory = (category: IParentCategory) => {
     setHoveredSlug(category.slug);
@@ -42,6 +43,7 @@ export const CategoryNav = () => {
   const handleOnMouseLeave = () => {
     setHoveredSlug(null);
   };
+
   return (
     <>
       {/* =======MOBILE ONLY: Dropdown Menu */}

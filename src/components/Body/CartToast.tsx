@@ -1,11 +1,13 @@
 import type { IProduct } from "@/services/product";
 
-interface CartToastProps {
+export interface CartToastProps {
   product: IProduct;
   color: string;
   size: string;
 }
 export const CartToast = ({ product, color, size }: CartToastProps) => {
+  if (!product || !color || !size) return;
+
   return (
     <div className="flex bg-white border border-gray-100 items-center gap-4 p-2">
       <img

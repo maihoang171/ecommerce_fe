@@ -40,7 +40,13 @@ export const getProductListByCategorySlugService = async (
 
   const res = await axiosClient.get<ApiResponse<IProduct[]>>(url);
 
-  return res.data.data ?? [];
+  const productList = res.data.data;
+
+  if (!productList) {
+    throw new Error("Failed to fetch product list!");
+  }
+
+  return productList;
 };
 
 export const getProductService = async (id: string): Promise<IProduct> => {

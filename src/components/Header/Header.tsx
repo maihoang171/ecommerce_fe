@@ -6,8 +6,8 @@ import { useAuthStore } from "@/stores/useAuthStore";
 import { getInitials } from "@/utils/auth";
 import { useLogout } from "@/hooks/useAuth";
 import { CategoryNav } from "./CategoryNav";
-import { LoginModal } from "./LoginModal";
-import { RegisterModal } from "./RegisterModal";
+import { LoginModal } from "../AuthModals/LoginModal";
+import { RegisterModal } from "../AuthModals/RegisterModal";
 
 export const Header = () => {
   const { openLogin } = useAuthModalStore();

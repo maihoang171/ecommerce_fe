@@ -3,12 +3,13 @@ import "@testing-library/jest-dom/vitest";
 import { afterEach, beforeEach, describe, vi, it, expect } from "vitest";
 import { useLogin } from "@/hooks/useAuth";
 import { screen, render, cleanup, waitFor } from "@testing-library/react";
-import { Login } from "./Login";
+import { LoginForm } from "./LoginForm";
 import userEvent from "@testing-library/user-event";
 import {
   runPasswordTests,
   runUsernameTests,
 } from "@/utils/__test__/authModalsTest";
+import { useAuthModalStore } from "@/stores/useAuthModalStore";
 
 vi.mock("@/hooks/useAuth", () => ({
   useLogin: vi.fn(),
@@ -25,15 +26,6 @@ const setup = (overrides = {}) => {
   });
 };
 
-const mockOpenRegister = vi.fn();
-const mockClose = vi.fn();
-vi.mock("@/stores/useAuthModelStore", () => ({
-  useAuthModalStore: () => ({
-    openRegister: mockOpenRegister,
-    close: mockClose,
-  }),
-}));
-
 vi.mock("@/components/Body/Loading", () => ({
   Loading: () => (
     <div data-testid="loading-spinner">Mock Loading Component</div>
@@ -43,6 +35,10 @@ vi.mock("@/components/Body/Loading", () => ({
 describe("Login component validation and submission", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Reset store state before each test
+    useAuthModalStore.setState({
+      authMode: "login",
+    });
   });
 
   afterEach(() => {
@@ -51,34 +47,35 @@ describe("Login component validation and submission", () => {
 
   it("should render all elements property", () => {
     setup();
-    render(<Login />);
+    render(<LoginForm />);
 
     expect(screen.getByPlaceholderText("Username")).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Password")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Login" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "here" }));
+    expect(screen.getByRole("button", { name: "here" })).toBeInTheDocument();
   });
 
-  runUsernameTests(() => render(<Login />));
-  runPasswordTests(() => render(<Login />));
+  runUsernameTests(() => render(<LoginForm />));
+  runPasswordTests(() => render(<LoginForm />));
 
   it("should switch to register modal on click", async () => {
     setup();
-    render(<Login />);
+    render(<LoginForm />);
 
     expect(screen.getByRole("button", { name: "here" })).toBeInTheDocument();
     const user = userEvent.setup();
     await user.click(screen.getByRole("button", { name: "here" }));
 
-    expect(mockOpenRegister).toHaveBeenCalled();
+    expect(useAuthModalStore.getState().authMode).toBe("register");
   });
 
   it("should keep the modal open on errors", async () => {
     setup();
+    useAuthModalStore.setState({ authMode: "login" });
 
     vi.mocked(mockHandleLogin).mockResolvedValue(false);
 
-    render(<Login />);
+    render(<LoginForm />);
 
     const user = userEvent.setup();
     const validUserInput = screen.getByPlaceholderText(/^username$/i);
@@ -91,7 +88,8 @@ describe("Login component validation and submission", () => {
 
     await waitFor(() => {
       expect(mockHandleLogin).toHaveBeenCalled();
-      expect(mockClose).not.toHaveBeenCalled();
+      // Verify the store action didn't close the modal
+      expect(useAuthModalStore.getState().authMode).toBe("login");
     });
   });
 
@@ -99,7 +97,7 @@ describe("Login component validation and submission", () => {
     setup();
     vi.mocked(mockHandleLogin).mockResolvedValue(true);
 
-    render(<Login />);
+    render(<LoginForm />);
 
     const user = userEvent.setup();
     const validUserInput = screen.getByPlaceholderText(/^username$/i);
@@ -111,14 +109,14 @@ describe("Login component validation and submission", () => {
     await user.click(screen.getByRole("button", { name: "Login" }));
 
     await waitFor(() => {
-      expect(mockClose).toHaveBeenCalled();
+      expect(useAuthModalStore.getState().authMode).toBeNull();
     });
   });
 
   it("should display loading spin when fetching data", () => {
     setup({ isLoading: true });
 
-    render(<Login />);
+    render(<LoginForm />);
 
     expect(screen.getByTestId("loading-spinner")).toBeInTheDocument();
   });
@@ -126,7 +124,7 @@ describe("Login component validation and submission", () => {
   it("should display error message on an error occurred", () => {
     setup({ errMsg: "Something went wrong" });
 
-    render(<Login />);
+    render(<LoginForm />);
 
     expect(screen.getByText("Something went wrong")).toBeInTheDocument();
   });

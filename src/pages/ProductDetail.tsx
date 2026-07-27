@@ -1,6 +1,5 @@
 import { useGetProduct } from "@/hooks/useProduct";
-import { useEffect, useMemo } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { Navigate, useParams, useSearchParams } from "react-router-dom";
 import { ProductColorSelector } from "@/components/Body/ProductColorSelector";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
@@ -10,7 +9,6 @@ import { Autoplay, Pagination } from "swiper/modules";
 import { Loading } from "@/components/Body/Loading";
 import { ProductSizeSelector } from "@/components/Body/ProductSizeSelector";
 import { ProductCard } from "@/components/Body/ProductCard";
-import type { IProduct } from "@/services/product";
 import { useAddToCart } from "@/hooks/useCart";
 import { useAuthStore } from "@/stores/useAuthStore";
 import type { IAddToCartPayLoad } from "@/services/cart";
@@ -21,15 +19,13 @@ export const ProductDetail = () => {
   const { id } = useParams();
   const { user } = useAuthStore();
 
-  const navigate = useNavigate();
-
   const {
     data: product,
     isPending: isGetProductPending,
     isError: isErrorGetProduct,
     error: getProductError,
   } = useGetProduct(id ?? "");
-  const currentProduct = product as IProduct;
+
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedColor = searchParams.get("color");
   const selectedSize = searchParams.get("size");
@@ -40,25 +36,49 @@ export const ProductDetail = () => {
     error: addToCartError,
   } = useAddToCart();
 
-  useEffect(() => {
-    if (!id || isNaN(Number(id)) || !selectedColor) {
-      navigate("/not-found", { replace: true });
-      return;
-    }
-  }, [id, selectedColor]);
+  const activeImages = product?.images
+    ? product.images.filter((img) => img.color === selectedColor)
+    : [];
+
+  const stockQuantity = product?.variants
+    ? selectedSize
+      ? (product.variants.find(
+          (v) => v.color === selectedColor && v.size === selectedSize,
+        )?.stockQuantity ?? 0)
+      : product.variants
+          .filter((v) => v.color === selectedColor)
+          .reduce((total, v) => total + v.stockQuantity, 0)
+    : 0;
+
+  const isInvalidId = !id || isNaN(Number(id));
+  const isInvalidColor = !selectedColor;
+
+  if (isInvalidId || isInvalidColor) {
+    return <Navigate to="not-found" replace />;
+  }
+
+  if (isGetProductPending) {
+    return <Loading />;
+  }
+
+  if (isErrorGetProduct) {
+    const msg = extractErrorMsg(getProductError);
+    return <ServerError message={msg} />;
+  }
+
+  if (!product) return <Navigate to="not-found" replace />;
 
   const onAddToCart = () => {
-    if (!product) return;
-
     const payload: IAddToCartPayLoad = {
       userId: Number(user?.id),
-      productId: Number(product?.id),
-      color: selectedColor ?? "",
-      size: selectedSize ?? "",
+      productId: Number(product.id),
+      color: selectedColor,
+      size: selectedSize!, 
     };
 
     handleAddToCart({ payload, product });
   };
+
   const handleSelectColor = (color: string) => {
     const nextParams = new URLSearchParams(searchParams);
 
@@ -72,37 +92,6 @@ export const ProductDetail = () => {
     nextParams.set("size", size);
     setSearchParams(nextParams);
   };
-
-  const activeImages = useMemo(() => {
-    if (!product || !product.images) return [];
-
-    return product.images.filter((img) => img.color === selectedColor);
-  }, [product, selectedColor]);
-
-  const stockQuantity = useMemo(() => {
-    if (!product || !product.variants) return 0;
-
-    if (selectedSize)
-      return (
-        product.variants.find(
-          (v) => v.color === selectedColor && v.size === selectedSize,
-        )?.stockQuantity ?? 0
-      );
-
-    //return all items when no size is selected
-    return product.variants
-      .filter((v) => v.color === selectedColor)
-      .reduce((total, v) => total + v.stockQuantity, 0);
-  }, [product, selectedColor, selectedSize]);
-
-  if (isGetProductPending) {
-    return <Loading />;
-  }
-
-  if (isErrorGetProduct) {
-    const msg = extractErrorMsg(getProductError);
-    return <ServerError message={msg} />;
-  }
 
   return (
     <div>
@@ -126,37 +115,37 @@ export const ProductDetail = () => {
         </Swiper>
 
         <div className="flex-1 mt-5 space-y-5 md:px-12 ">
-          <div className="font-bold text-2xl">{currentProduct.name}</div>
+          <div className="font-bold text-2xl">{product.name}</div>
 
-          {currentProduct.discountPrice ? (
+          {product?.discountPrice ? (
             <div className="flex flex-row gap-5">
-              <div className="text-red-500">
-                ${currentProduct.discountPrice}
+              <div className="text-red-500" data-testid="discount-price">
+                ${product.discountPrice}
               </div>
-              <div className="line-through">${currentProduct.price}</div>
+              <div className="line-through">${product.price}</div>
             </div>
           ) : (
             <div>
-              <div data-testid="original-price">${currentProduct.price}</div>
+              <div data-testid="original-price">${product.price}</div>
             </div>
           )}
 
           <div>
             {" "}
             <div className="font-bold">{selectedColor}</div>
-            <div className="text-sm">Only {stockQuantity} items left</div>
+            <div className="text-sm" data-testid="stock-quantity">Only {stockQuantity} items left</div>
           </div>
 
           <ProductColorSelector
-            product={currentProduct}
-            selectedColor={selectedColor || ""}
+            product={product}
+            selectedColor={selectedColor}
             onSelectColor={handleSelectColor}
           />
 
           <ProductSizeSelector
-            product={currentProduct}
-            selectedColor={selectedColor || ""}
-            selectedSize={selectedSize || ""}
+            product={product}
+            selectedColor={selectedColor}
+            selectedSize={selectedSize ?? ""}
             onSelectSize={handleSelectSize}
           />
 
@@ -169,7 +158,7 @@ export const ProductDetail = () => {
 
           {addToCartError && (
             <div className="text-red-400 text-center">
-              {addToCartError.message}
+              {extractErrorMsg(addToCartError)}
             </div>
           )}
           {/* Handle add to cart */}
@@ -180,7 +169,10 @@ export const ProductDetail = () => {
             disabled={!selectedSize}
           >
             {isAddToCartPending ? (
-              <div className="loading loading-spinner" />
+              <div
+                className="loading loading-spinner"
+                data-testid="add-to-cart-loading"
+              />
             ) : (
               <p>Add to cart</p>
             )}
@@ -204,7 +196,7 @@ export const ProductDetail = () => {
           }}
         >
           {product?.relatedProducts?.map((rp) => (
-            <SwiperSlide>
+            <SwiperSlide key={rp.id}>
               <div className="p-2">
                 <ProductCard product={rp} />
               </div>

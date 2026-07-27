@@ -1,5 +1,5 @@
 export const ServerError = ({
-  message = "Internal server error",
+  message = "Internal server error!",
 }: {
   message?: string;
 }) => {

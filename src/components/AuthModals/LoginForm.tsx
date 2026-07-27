@@ -5,7 +5,8 @@ import { useAuthModalStore } from "@/stores/useAuthModalStore";
 import { useLogin } from "@/hooks/useAuth";
 import { Loading } from "../Body/Loading";
 
-export const Login = () => {
+export const LoginForm
+ = () => {
   const {
     register,
     handleSubmit,

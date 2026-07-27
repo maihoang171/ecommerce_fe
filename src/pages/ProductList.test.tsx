@@ -1,26 +1,22 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { MemoryRouter } from "react-router-dom";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { useProductStore } from "@/stores/useProductStore";
+import { afterEach, beforeEach, describe, vi, it, expect } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
-import { ProductList } from "./ProductList";
-import { useCategoryStore } from "@/stores/useCategoryStore";
 import userEvent from "@testing-library/user-event";
-import { mockProductList, mockCategoryList } from "@/tests/mock/mockData";
+import { MemoryRouter } from "react-router-dom";
+import { ProductList } from "./ProductList";
 import { useGetProductList } from "@/hooks/useProduct";
-
-vi.mock("@/stores/useProductStore", () => ({
-  useProductStore: vi.fn(),
-}));
+import { useGetCategoryList } from "@/hooks/useCategory";
+import type { IProduct } from "@/services/product";
+import { mockCategoryList, mockProductList } from "@/tests/mock/mockData";
+import type { IParentCategory } from "@/services/category";
 
 vi.mock("@/hooks/useProduct", () => ({
   useGetProductList: vi.fn(),
 }));
-const useGetProductListMock = vi.mocked(useGetProductList);
 
-vi.mock("@/stores/useCategoryStore", () => ({
-  useCategoryStore: vi.fn(),
+vi.mock("@/hooks/useCategory", () => ({
+  useGetCategoryList: vi.fn(),
 }));
 
 const mockNavigate = vi.fn();
@@ -34,201 +30,146 @@ vi.mock("react-router-dom", async () => {
   };
 });
 
-vi.mock("@/components/Body/ProductCard", () => ({
-  ProductCard: () => (
-    <div data-testid="mock-product-card-component">
-      Fake Product Detail Component
-    </div>
-  ),
-}));
-
 vi.mock("@/components/Body/Loading", () => ({
-  Loading: () => (
-    <div data-testid="loading-spinner">Mock Loading component</div>
+  Loading: () => <div data-testid="loading-spinner">Loading...</div>,
+}));
+
+vi.mock("@/components/Body/ProductCard", () => ({
+  ProductCard: ({ product }: { product: IProduct }) => (
+    <div data-testid="product-card">{product.name}</div>
   ),
 }));
 
-describe("ProductList", () => {
+vi.mock("./ServerError", () => ({
+  ServerError: ({ message }: { message: string }) => (
+    <div data-testid="server-error">{message}</div>
+  ),
+}));
+
+describe("ProductList Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-
-    useGetProductListMock.mockReturnValue({
-      handleGetProductList: vi.fn(),
-      isLoading: false,
-    });
+    vi.mocked(useGetCategoryList).mockReturnValue({
+      data: mockCategoryList,
+    } as ReturnType<typeof useGetCategoryList>);
   });
 
   afterEach(() => {
     cleanup();
   });
 
-  it("should display message if no products has found", async () => {
-    vi.mocked(useProductStore).mockReturnValue({ productList: [] });
+  const setupMocks = ({
+    categoriesData = mockCategoryList,
+    productsData = null,
+    isGetCategoryPending = false,
+    isGetProductsPending = false,
+    isGetProductsError = false,
+    getProductsError = null,
+    parentSlug = "women",
+    childSlug = "dresses"
+  }: {
+    categoriesData?: IParentCategory[] | null;
+    productsData?: IProduct[] | null;
+    isGetCategoryPending?: boolean;
+    isGetProductsPending?: boolean;
+    isGetProductsError?: boolean;
+    getProductsError?: Error | null;
+    parentSlug?: string | null;
+    childSlug?: string | null;
+  } = {}) => {
+      vi.mocked(mockUseParams).mockReturnValue({ parentSlug, childSlug});
 
-    vi.mocked(mockUseParams).mockReturnValue({
-      parentSlug: "mockParentSlug",
-    });
+    vi.mocked(useGetCategoryList).mockReturnValue({
+      data: categoriesData, isPending: isGetCategoryPending
+    } as unknown as ReturnType<typeof useGetCategoryList>);
 
-    vi.mocked(useCategoryStore).mockReturnValue({
-      categoryList: mockCategoryList,
-      activeParentCategory: mockCategoryList[0],
-      activeChildCategory: mockCategoryList[0].children[0],
-      setActiveChildCategory: vi.fn(),
-    });
+    vi.mocked(useGetProductList).mockReturnValue({
+      data: productsData,
+      isPending: isGetProductsPending,
+      isError: isGetProductsError,
+      error: getProductsError,
+    } as unknown as ReturnType<typeof useGetProductList>);
+  };
 
+  const renderComponent = () => {
     render(
       <MemoryRouter>
         <ProductList />
       </MemoryRouter>,
     );
+  };
 
-    expect(screen.getByText(/No products has found/i)).toBeInTheDocument();
-  });
+  it("should render loading state correctly", () => {
+    setupMocks({ isGetProductsPending: true });
 
-  it("should navigate to not found page when the parent slug is undefined", () => {
-    vi.mocked(useProductStore).mockReturnValue({ productList: [] });
-
-    vi.mocked(mockUseParams).mockReturnValue({
-      parentSlug: undefined,
-      childSlug: "dresses",
-    });
-
-    render(
-      <MemoryRouter>
-        <ProductList />
-      </MemoryRouter>,
-    );
-
-    expect(mockNavigate).toHaveBeenCalledWith("/not-found", { replace: true });
-  });
-
-  it("should navigate to not found page when the child slug is undefined", () => {
-    vi.mocked(useProductStore).mockReturnValue({ productList: [] });
-    vi.mocked(mockUseParams).mockReturnValue({
-      parentSlug: "women",
-      childSlug: undefined,
-    });
-
-    vi.mocked(useCategoryStore).mockReturnValue({
-      categoryList: mockCategoryList,
-      activeParentCategory: mockCategoryList[0],
-      activeChildCategory: mockCategoryList[0].children[0],
-      setActiveChildCategory: vi.fn(),
-      setActiveParentCategory: vi.fn(),
-    });
-
-    render(
-      <MemoryRouter>
-        <ProductList />
-      </MemoryRouter>,
-    );
-    expect(mockNavigate).toHaveBeenCalledWith("/not-found", { replace: true });
-  });
-
-  it("should set active child category and navigate to exact link on click", async () => {
-    vi.mocked(useProductStore).mockReturnValue({
-      productList: mockProductList,
-    });
-
-    vi.mocked(mockUseParams).mockReturnValue({
-      parentSlug: "women",
-      childSlug: "dresses",
-    });
-
-    const mockSetActiveChildCategory = vi.fn();
-    vi.mocked(useCategoryStore).mockReturnValue({
-      categoryList: mockCategoryList,
-      activeParentCategory: mockCategoryList[0],
-      activeChildCategory: mockCategoryList[0].children[0],
-      setActiveChildCategory: mockSetActiveChildCategory,
-      setActiveParentCategory: vi.fn(),
-    });
-
-    render(
-      <MemoryRouter>
-        <ProductList />
-      </MemoryRouter>,
-    );
-
-    const user = userEvent.setup();
-    const childCategoryBtn = screen.getByRole("button", { name: /tops/i });
-
-    await user.click(childCategoryBtn);
-
-    expect(mockSetActiveChildCategory).toHaveBeenCalledWith(
-      mockCategoryList[0].children[1],
-    );
-    expect(mockNavigate).toHaveBeenCalledWith(`/women/tops`);
-  });
-
-  it("should render all elements and proper product list on success", () => {
-    vi.mocked(useProductStore).mockReturnValue({
-      productList: mockProductList,
-    });
-
-    vi.mocked(mockUseParams).mockReturnValue({
-      parentSlug: "women",
-      childSlug: "dresses",
-    });
-
-    vi.mocked(useCategoryStore).mockReturnValue({
-      categoryList: mockCategoryList,
-      activeParentCategory: mockCategoryList[0],
-      activeChildCategory: mockCategoryList[0].children[0],
-      setActiveChildCategory: vi.fn(),
-      setActiveParentCategory: vi.fn(),
-    });
-
-    render(
-      <MemoryRouter>
-        <ProductList />
-      </MemoryRouter>,
-    );
-
-    expect(screen.getByText(/2 products/i)).toBeInTheDocument();
-    expect(screen.getAllByTestId("mock-product-card-component")).toHaveLength(
-      2,
-    );
-  });
-
-  it("should do nothing when the category length equal 0", () => {
-    vi.mocked(useProductStore).mockReturnValue({ productList: [] });
-
-    vi.mocked(mockUseParams).mockReturnValue({
-      parentSlug: "women",
-      childSlug: "dresses",
-    });
-
-    const mockSetActiveParentCategory = vi.fn();
-    vi.mocked(useCategoryStore).mockReturnValue({
-      categoryList: [],
-      activeParentCategory: undefined,
-      activeChildCategory: undefined,
-      setActiveChildCategory: vi.fn(),
-      setActiveParentCategory: mockSetActiveParentCategory,
-    });
-
-    render(
-      <MemoryRouter>
-        <ProductList />
-      </MemoryRouter>,
-    );
-
-    expect(mockSetActiveParentCategory).not.toHaveBeenCalled();
-  });
-
-  it("should display loading spinner when isLoading is true", () => {
-    useGetProductListMock.mockReturnValue({
-      handleGetProductList: vi.fn(),
-      isLoading: true,
-    });
-
-    render(
-      <MemoryRouter>
-        <ProductList />
-      </MemoryRouter>,
-    );
+    renderComponent();
 
     expect(screen.getByTestId("loading-spinner")).toBeInTheDocument();
   });
+
+  it("should render ServerError when an error occurs", () => {
+    setupMocks({
+      isGetProductsError: true,
+      getProductsError: new Error("Failed to fetch products"),
+    });
+
+    renderComponent();
+
+    const errorEl = screen.getByTestId("server-error");
+    expect(errorEl).toBeInTheDocument();
+    expect(errorEl).toHaveTextContent("Failed to fetch products");
+  });
+
+  it("should render products and child category navigation tabs successfully", async () => {
+    setupMocks({ productsData: mockProductList });
+
+    renderComponent();
+
+    const user = userEvent.setup();
+
+    // Check product cards count and text
+    expect(screen.getAllByTestId("product-card")).toHaveLength(2);
+    expect(screen.getByText("Evening Slip Dress")).toBeInTheDocument();
+    expect(screen.getByText("2 products")).toBeInTheDocument();
+
+    // Check sub-category navigation click
+    const topsButton = screen.getByRole("button", { name: /Tops/i });
+    await user.click(topsButton);
+
+    expect(mockNavigate).toHaveBeenCalledWith("/women/tops");
+  });
+
+  it("should display empty product message when list is empty", () => {
+    setupMocks({ productsData: [] });
+
+    renderComponent();
+
+    expect(screen.getByText("No products has found")).toBeInTheDocument();
+  });
+
+  it("should fallback empty string and navigate to not found page when parentSlug is null or undefined", () => {
+    setupMocks({ categoriesData: mockCategoryList, parentSlug: null });
+
+    renderComponent();
+
+    expect(mockNavigate).toHaveBeenCalledWith("/not-found", { replace: true });
+  });
+
+  it("should fallback empty array and return not found page when category is null or undefined", () => {
+    setupMocks({categoriesData: null})
+
+    renderComponent()
+
+    expect(mockNavigate).toHaveBeenCalledWith("/not-found", { replace: true });
+
+  });
+
+  it("should not call navigate when category pending is true", () => {
+     setupMocks({isGetCategoryPending: true})
+
+    renderComponent()
+
+    expect(mockNavigate).not.toHaveBeenCalledWith("/not-found", { replace: true });
+
+  })
 });

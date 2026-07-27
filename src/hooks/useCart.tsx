@@ -7,14 +7,17 @@ import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 interface ICartVariables {
-  payload: IAddToCartPayLoad,
-  product: IProduct
+  payload: IAddToCartPayLoad;
+  product: IProduct;
 }
 export const useAddToCart = () => {
   return useMutation({
-    mutationFn: (variables: ICartVariables) => addToCartService(variables.payload),
+    mutationFn: (variables: ICartVariables) =>
+      addToCartService(variables.payload),
+
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["cart"] });
+
       toast.custom(() => (
         <CartToast
           product={variables.product}
@@ -23,6 +26,7 @@ export const useAddToCart = () => {
         />
       ));
     },
+
     onError: (err) => {
       const msg = extractErrorMsg(err);
       console.error("Failed to add item to cart: " + msg);

@@ -1,15 +1,14 @@
 import { X } from "lucide-react";
-import { Login } from "../AuthModals/Login";
+import { LoginForm } from "./LoginForm";
 import { useAuthModalStore } from "@/stores/useAuthModalStore";
 
 export const LoginModal = () => {
   const { authMode, close } = useAuthModalStore();
 
+  if (authMode !== "login") return;
+  
   return (
-    <div
-      data-testid="login-modal"
-      className={`modal ${authMode === "login" ? "modal-open" : ""}`}
-    >
+    <div data-testid="login-modal" className={`modal modal-open`}>
       <div className="modal-box border border-base-300 bg-base-100">
         <button
           onClick={close}
@@ -17,7 +16,7 @@ export const LoginModal = () => {
         >
           <X />
         </button>
-        <Login />
+        <LoginForm />
       </div>
       <div className="modal-backdrop" onClick={close} />
     </div>

@@ -8,10 +8,11 @@ import { useGetCategoryList } from "@/hooks/useCategory";
 import { extractErrorMsg } from "@/utils/error";
 
 export const Category = () => {
+
   const { parentSlug } = useParams<{ parentSlug?: string }>();
   const {
     data: categoryList = [],
-    isLoading,
+    isPending,
     isError,
     error,
   } = useGetCategoryList();
@@ -23,10 +24,10 @@ export const Category = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isLoading && !currentCategory) {
+    if (!isPending && !currentCategory) {
       navigate("/not-found", { replace: true });
     }
-  }, [isLoading, currentCategory, navigate]);
+  }, [isPending, currentCategory, navigate]);
 
   if (isError) {
     const msg = extractErrorMsg(error);

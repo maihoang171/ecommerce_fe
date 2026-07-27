@@ -1,15 +1,17 @@
 import { useAuthModalStore } from "@/stores/useAuthModalStore";
-import { Register } from "../AuthModals/Register";
+import { RegisterForm } from "./RegisterForm";
 
 export const RegisterModal = () => {
   const { authMode, close } = useAuthModalStore();
 
+  if (authMode !== "register") return; 
+
   return (
-    <div className={`modal ${authMode === "register" ? "modal-open" : ""}`}>
+    <div className={`modal modal-open`}>
       <div className="modal-box border border-base-300 bg-base-100">
-        <Register />
+        <RegisterForm />
       </div>
-      <div className="modal-backdrop" onClick={close} />
+      <div className="modal-backdrop" data-testid="back-drop" onClick={close} />
     </div>
   );
 };

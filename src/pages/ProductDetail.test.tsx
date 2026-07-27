@@ -1,13 +1,21 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from "@testing-library/react";
 import { MemoryRouter, useParams, useSearchParams } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, test, vi } from "vitest";
-import { mockProductList } from "@/tests/mock/mockData";
-import { useProductStore } from "@/stores/useProductStore";
 import { ProductDetail } from "./ProductDetail";
 import { useGetProduct } from "@/hooks/useProduct";
+import { useAddToCart } from "@/hooks/useCart";
+import { mockProductList } from "@/tests/mock/mockData";
+import type { IProduct } from "@/services/product";
 import userEvent from "@testing-library/user-event";
+
 //stimulate matchMedia
 Object.defineProperty(window, "matchMedia", {
   writable: true,
@@ -23,23 +31,26 @@ Object.defineProperty(window, "matchMedia", {
   })),
 });
 
-const mockNavigate = vi.fn();
-vi.mock(import("react-router-dom"), async (importOriginal) => {
-  const actual = await importOriginal();
+vi.mock("react-router-dom", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("react-router-dom")>();
   return {
     ...actual,
     useParams: vi.fn(),
     useSearchParams: vi.fn(),
-    useNavigate: () => mockNavigate,
+    Navigate: ({ to, replace }: { to: string; replace?: boolean }) => (
+      <div data-testid="navigate-redirect" data-replace={replace}>
+        Redirected to {to}
+      </div>
+    ),
   };
 });
 
-vi.mock("../stores/useProductStore", () => ({
-  useProductStore: vi.fn(),
-}));
-
 vi.mock("@/hooks/useProduct", () => ({
   useGetProduct: vi.fn(),
+}));
+
+vi.mock("@/hooks/useCart", () => ({
+  useAddToCart: vi.fn(),
 }));
 
 vi.mock("@/components/Body/Loading", () => ({
@@ -48,11 +59,36 @@ vi.mock("@/components/Body/Loading", () => ({
   ),
 }));
 
-describe("product detail component", () => {
-  const mockSetSearchParams = vi.fn();
-  const mockSetProduct = vi.fn();
-  const mockHandleGetProduct = vi.fn();
+vi.mock("./ServerError", () => ({
+  ServerError: ({ message }: { message?: string }) => (
+    <div data-testid="server-error">{message || "Server is crashed"}</div>
+  ),
+}));
 
+vi.mock("swiper/react", () => ({
+  Swiper: ({
+    children,
+    className,
+  }: {
+    children: React.ReactNode;
+    className?: string;
+  }) => (
+    <div data-testid="swiper-container" className={className}>
+      {children}
+    </div>
+  ),
+
+  SwiperSlide: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="swiper-slide">{children}</div>
+  ),
+}));
+
+vi.mock("swiper/modules", () => ({
+  Pagination: vi.fn(),
+  Autoplay: vi.fn(),
+}));
+
+describe("product detail component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -61,262 +97,262 @@ describe("product detail component", () => {
     cleanup();
   });
 
+  const mockSetSearchParams = vi.fn();
+  const mockHandleAddToCart = vi.fn();
+  const setupMocks = ({
+    id,
+    searchParams = "color=Red",
+    product = null,
+    isGetProductPending = false,
+    isErrorGetProduct = false,
+    getProductError = null,
+    isAddToCartPending = false,
+    addToCartError = null,
+  }: {
+    id?: string;
+    searchParams?: string;
+    product?: IProduct | null;
+    isGetProductPending?: boolean;
+    isErrorGetProduct?: boolean;
+    getProductError?: Error | null;
+    isAddToCartPending?: boolean;
+    addToCartError?: Error | null;
+  }) => {
+    vi.mocked(useParams).mockReturnValue({ id });
+
+    vi.mocked(useSearchParams).mockReturnValue([
+      new URLSearchParams(searchParams),
+      mockSetSearchParams,
+    ]);
+
+    vi.mocked(useGetProduct).mockReturnValue({
+      data: product,
+      isPending: isGetProductPending,
+      isError: isErrorGetProduct,
+      error: getProductError,
+    } as unknown as ReturnType<typeof useGetProduct>);
+
+    vi.mocked(useAddToCart).mockReturnValue({
+      mutate: mockHandleAddToCart,
+      isPending: isAddToCartPending,
+      error: addToCartError,
+    } as unknown as ReturnType<typeof useAddToCart>);
+
+    return { product };
+  };
+
   const invalidCases = [
     {
       id: undefined,
-      searchParams: "color=red",
+      searchParams: "color=Red",
+      product: null,
       desc: "product id is undefined",
     },
     {
       id: "abc",
-      searchParams: "color=red",
+      searchParams: "color=Red",
+      product: null,
       desc: "product id is not a number",
     },
-  ];
-  test.each(invalidCases)(
-    "should navigate to not-found page when $desc",
-    ({ id, searchParams }) => {
-      vi.mocked(useParams).mockReturnValue({ id });
-
-      vi.mocked(useProductStore).mockReturnValue({
-        product: mockProductList[0],
-        productList: mockProductList,
-        setProduct: mockSetProduct,
-      });
-
-      vi.mocked(useSearchParams).mockReturnValue([
-        new URLSearchParams(searchParams),
-        mockSetSearchParams,
-      ]);
-
-      vi.mocked(useGetProduct).mockReturnValue({
-        handleGetProduct: mockHandleGetProduct,
-        isLoadingGetProduct: false,
-        errMsg: null,
-      });
-
-      render(
-        <MemoryRouter>
-          <ProductDetail />
-        </MemoryRouter>,
-      );
-
-      expect(mockNavigate).toHaveBeenCalledWith("/not-found", {
-        replace: true,
-      });
+    {
+      id: "1",
+      searchParams: "",
+      product: null,
+      desc: "color is null or undefined",
     },
-  );
+    {
+      id: "1",
+      searchParams: "color=Red",
+      product: null,
+      desc: "product not found",
+    },
+  ];
 
-  it("should return loading component when isLoading", () => {
-    vi.mocked(useParams).mockReturnValue({ id: "1" });
-
-    vi.mocked(useSearchParams).mockReturnValue([
-      new URLSearchParams("color=Red"),
-      mockSetSearchParams,
-    ]);
-
-    vi.mocked(useProductStore).mockReturnValue({
-      product: mockProductList[0],
-      productList: mockProductList,
-      setProduct: vi.fn(),
-    });
-
-    vi.mocked(useGetProduct).mockReturnValue({
-      handleGetProduct: vi.fn(),
-      isLoadingGetProduct: true,
-      errMsg: null,
-    });
-
+  const renderComponent = () =>
     render(
       <MemoryRouter>
         <ProductDetail />
       </MemoryRouter>,
     );
+
+  test.each(invalidCases)(
+    "should navigate to not-found page when $desc",
+    ({ id, searchParams, product }) => {
+      setupMocks({
+        id,
+        searchParams,
+        product,
+      });
+
+      renderComponent();
+
+      const redirectElement = screen.getByTestId("navigate-redirect");
+      expect(redirectElement).toHaveAttribute("data-replace", "true");
+    },
+  );
+
+  it("should return loading component when fetching product", () => {
+    setupMocks({
+      id: "1",
+      isGetProductPending: true,
+    });
+
+    renderComponent();
 
     expect(screen.getByTestId("loading-component")).toBeInTheDocument();
   });
 
-  it("should display correct stock quantity when a size is selected", async () => {
-    vi.mocked(useParams).mockReturnValue({ id: "1" });
-    vi.mocked(useProductStore).mockReturnValue({
-      product: mockProductList[0],
-      productList: mockProductList,
-      setProduct: mockSetProduct,
+  it("should return server error component when an error occurred", () => {
+    setupMocks({
+      id: "1",
+      isErrorGetProduct: true,
+      getProductError: new Error("Something went wrong"),
     });
-    vi.mocked(useGetProduct).mockReturnValue({
-      handleGetProduct: mockHandleGetProduct,
-      isLoadingGetProduct: false,
-      errMsg: null,
-    });
-    const searchParams = "categoryId=4&color=Red&size=M";
-    vi.mocked(useSearchParams).mockReturnValue([
-      new URLSearchParams(searchParams),
-      mockSetSearchParams,
-    ]);
 
-    render(
-      <MemoryRouter>
-        <ProductDetail />
-      </MemoryRouter>,
-    );
+    renderComponent();
 
-    expect(await screen.findByText("Only 5 items left")).toBeInTheDocument();
+    const serverError = screen.getByTestId("server-error");
+
+    expect(serverError).toBeInTheDocument();
+    expect(serverError).toHaveTextContent("Something went wrong");
   });
 
-  it("should display 0 when the size is invalid", async () => {
-    vi.mocked(useParams).mockReturnValue({ id: "1" });
-    vi.mocked(useProductStore).mockReturnValue({
-      product: mockProductList[0],
-      productList: mockProductList,
-      setProduct: mockSetProduct,
-    });
-    vi.mocked(useGetProduct).mockReturnValue({
-      handleGetProduct: mockHandleGetProduct,
-      isLoadingGetProduct: false,
-      errMsg: null,
-    });
-    const searchParams = "categoryId=4&color=Red&size=ABC"; //invalid size
-    vi.mocked(useSearchParams).mockReturnValue([
-      new URLSearchParams(searchParams),
-      mockSetSearchParams,
-    ]);
+  it("should display product details and related products on success", () => {
+    const { product } = setupMocks({ id: "1", product: mockProductList[0] });
 
-    render(
-      <MemoryRouter>
-        <ProductDetail />
-      </MemoryRouter>,
-    );
+    renderComponent();
 
-    expect(await screen.findByText("Only 0 items left")).toBeInTheDocument();
+    const swiperContainers = screen.getAllByTestId("swiper-container");
+
+    // The first Swiper is for main product images
+    const mainImageSwiper = swiperContainers[0];
+    const mainImages = within(mainImageSwiper).getAllByRole("img");
+    expect(mainImages).toHaveLength(2);
+
+    // The second Swiper is for related products
+    const relatedProductSwiper = swiperContainers[1];
+    const relatedCards =
+      within(relatedProductSwiper).getAllByTestId("swiper-slide");
+    expect(relatedCards).toHaveLength(product!.relatedProducts.length);
   });
 
-  it("should display only original price when no discount exists", () => {
-    vi.mocked(useParams).mockReturnValue({ id: "1" });
-    vi.mocked(useProductStore).mockReturnValue({
+  it("should display original price when no discount exists", () => {
+    setupMocks({
+      id: "1",
       product: mockProductList[1],
-      productList: mockProductList,
-      setProduct: mockSetProduct,
     });
-    vi.mocked(useGetProduct).mockReturnValue({
-      handleGetProduct: mockHandleGetProduct,
-      isLoadingGetProduct: false,
-      errMsg: null,
-    });
-    const searchParams = "categoryId=4&color=Red";
-    vi.mocked(useSearchParams).mockReturnValue([
-      new URLSearchParams(searchParams),
-      mockSetSearchParams,
-    ]);
 
-    render(
-      <MemoryRouter>
-        <ProductDetail />
-      </MemoryRouter>,
-    );
+    renderComponent();
 
-    expect(screen.getByTestId("original-price")).toBeInTheDocument();
-    expect(screen.queryByTestId("original-price")).not.toHaveClass(
-      "line-through",
-    );
+    const discountPrice = screen.queryByTestId("discount-price");
+    expect(discountPrice).not.toBeInTheDocument();
   });
 
-  it("should setSearchParams for color when clicked", async () => {
-    vi.mocked(useParams).mockReturnValue({ id: "1" });
-    vi.mocked(useProductStore).mockReturnValue({
+  it("should display loading spinner when loading ", () => {
+    setupMocks({
+      id: "1",
       product: mockProductList[0],
-      productList: mockProductList,
-      setProduct: mockSetProduct,
-    });
-    vi.mocked(useGetProduct).mockReturnValue({
-      handleGetProduct: mockHandleGetProduct,
-      isLoadingGetProduct: false,
-      errMsg: null,
+      isAddToCartPending: true,
     });
 
-    const searchParams = "categoryId=4&color=Red";
-    vi.mocked(useSearchParams).mockReturnValue([
-      new URLSearchParams(searchParams),
-      mockSetSearchParams,
-    ]);
+    renderComponent();
+
+    const spinnerAddToCart = screen.getByTestId("add-to-cart-loading");
+    expect(spinnerAddToCart).toBeInTheDocument();
+  });
+
+  it("should display message if an error occurred when add to cart", () => {
+    setupMocks({
+      id: "1",
+      product: mockProductList[0],
+      addToCartError: new Error("Something went wrong"),
+    });
+
+    renderComponent();
+
+    expect(screen.getByText("Something went wrong")).toBeInTheDocument();
+  });
+
+  it("should update color in search params when a color is clicked", async () => {
+    setupMocks({
+      id: "1",
+      product: mockProductList[0],
+    });
+
+    renderComponent();
 
     const user = userEvent.setup();
-    render(
-      <MemoryRouter>
-        <ProductDetail />
-      </MemoryRouter>,
-    );
 
-    const blueBtn = screen.getAllByRole("button", { name: /Blue/i })[0];
-
+    const blueBtn = screen.getByRole("button", { name: /Blue/i });
     await user.click(blueBtn);
     expect(mockSetSearchParams).toHaveBeenCalled();
+    const colorSearchParams = mockSetSearchParams.mock.calls[0][0];
 
-    const calledParams = mockSetSearchParams.mock.calls[0][0];
-    expect(calledParams.get("categoryId")).toBe("4");
-    expect(calledParams.get("color")).toBe("Blue");
+    expect(colorSearchParams.get("color")).toBe("Blue");
+    expect(colorSearchParams.get("size")).toBeNull();
   });
 
-  it("should setSearchParams for size when clicked", async () => {
-    vi.mocked(useParams).mockReturnValue({ id: "1" });
-    vi.mocked(useProductStore).mockReturnValue({
+  it("should update size in search params when a size is clicked", async () => {
+    setupMocks({
+      id: "1",
       product: mockProductList[0],
-      productList: mockProductList,
-      setProduct: mockSetProduct,
     });
-    vi.mocked(useGetProduct).mockReturnValue({
-      handleGetProduct: mockHandleGetProduct,
-      isLoadingGetProduct: false,
-      errMsg: null,
-    });
+
+    renderComponent();
 
     const user = userEvent.setup();
-    const searchParams = "categoryId=4&color=Red";
-    vi.mocked(useSearchParams).mockReturnValue([
-      new URLSearchParams(searchParams),
-      mockSetSearchParams,
-    ]);
 
-    render(
-      <MemoryRouter>
-        <ProductDetail />
-      </MemoryRouter>,
-    );
-
-    const sizeMBtn = screen.getByRole("button", { name: /^M$/i });
-
-    await user.click(sizeMBtn);
-    screen.debug(sizeMBtn);
+    const sizeSBtn = screen.getByRole("button", { name: "M" });
+    await user.click(sizeSBtn);
     expect(mockSetSearchParams).toHaveBeenCalled();
-
-    const calledParams = mockSetSearchParams.mock.calls[0][0];
-    expect(calledParams.get("size")).toBe("M");
+    const sizeSearchParams = mockSetSearchParams.mock.calls[0][0];
+    expect(sizeSearchParams.get("size")).toBe("M");
   });
 
-  it("should set selectedColor is empty string when it is null or undefined", () => {
-    vi.mocked(useParams).mockReturnValue({ id: "1" });
-    vi.mocked(useProductStore).mockReturnValue({
+  it("should call handleAddToCart when clicked", async () => {
+    setupMocks({
+      id: "1",
       product: mockProductList[0],
-      productList: mockProductList,
-      setProduct: mockSetProduct,
-    });
-    vi.mocked(useGetProduct).mockReturnValue({
-      handleGetProduct: mockHandleGetProduct,
-      isLoadingGetProduct: false,
-      errMsg: null,
+      searchParams: "color=Blue&size=M",
     });
 
-    const searchParams = "categoryId=4";
-    const mockSearchParams = new URLSearchParams(searchParams);
-    vi.mocked(useSearchParams).mockReturnValue([
-      mockSearchParams,
-      mockSetSearchParams,
-    ]);
+    renderComponent();
 
-    render(
-      <MemoryRouter>
-        <ProductDetail />
-      </MemoryRouter>,
-    );
-    expect(mockSearchParams.get("color")).toBe(null);
+    const user = userEvent.setup();
+
+    const addToCartBtn = screen.getByRole("button", { name: /Add to cart/i });
+    await user.click(addToCartBtn);
+
+    expect(mockHandleAddToCart).toHaveBeenCalled();
   });
+
+  it("should display stock quantity 0 when selected color or selected size not match with variants", () => {
+    setupMocks({
+      id: "1",
+      product: mockProductList[0],
+      searchParams: "color=Pink&size=40"
+    })
+
+    renderComponent()
+
+    const stockQuantity = screen.getByTestId("stock-quantity")
+    expect(stockQuantity).toHaveTextContent("0")
+  })
+
+ it("should not call handleAddToCart when size is not selected", () => {
+  setupMocks({
+    id: "1",
+    product: mockProductList[0],
+    searchParams: "color=Red",
+  });
+
+  renderComponent();
+
+  const addToCartBtn = screen.getByRole("button", { name: /Add to cart/i });
+
+  (addToCartBtn as HTMLButtonElement).disabled = false;
+  fireEvent.click(addToCartBtn);
+
+  expect(mockHandleAddToCart).not.toHaveBeenCalled();
+});
 });

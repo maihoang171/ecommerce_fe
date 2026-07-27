@@ -5,7 +5,7 @@ import { useAuthModalStore } from "@/stores/useAuthModalStore";
 import { useRegisterUser } from "@/hooks/useAuth";
 import { Loading } from "../Body/Loading";
 
-export const Register = () => {
+export const RegisterForm = () => {
   const {
     register,
     handleSubmit,

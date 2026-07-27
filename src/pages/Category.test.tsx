@@ -3,9 +3,9 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Category } from "./Category";
-import { useCategoryStore } from "@/stores/useCategoryStore";
 import { mockCategoryList } from "@/tests/mock/mockData";
 import { useParams } from "react-router-dom";
+import { useGetCategoryList } from "@/hooks/useCategory";
 
 const mockNavigate = vi.fn();
 vi.mock("react-router-dom", async () => {
@@ -17,8 +17,16 @@ vi.mock("react-router-dom", async () => {
   };
 });
 
-vi.mock("../stores/useCategoryStore", () => ({
-  useCategoryStore: vi.fn(),
+vi.mock("@/hooks/useCategory", () => ({
+  useGetCategoryList: vi.fn(),
+}));
+
+vi.mock("./ServerError", () => ({
+  ServerError: ({ message }: { message: string }) => (
+    <div data-testid="server-error" data-message={message}>
+      {message}
+    </div>
+  ),
 }));
 
 vi.mock("../components/Body/CampaignHeroBanner", () => ({
@@ -32,26 +40,35 @@ vi.mock("../components/Body/CampaignHeroBanner", () => ({
 vi.mock("../components/Body/ParentCategoryDetail", () => ({
   ParentCategoryDetail: () => (
     <div data-testid="mock-parent-category-detail">
-      Fake ParentCategoryDetail
+      Mock ParentCategoryDetail
     </div>
   ),
 }));
 describe("category component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-
-    vi.mocked(useCategoryStore).mockReturnValue({
-      categoryList: mockCategoryList,
-    });
   });
 
   afterEach(() => {
     cleanup();
   });
-  it("should navigate to NotFound page when missing or incorrect slug", () => {
+
+  const mockUseGetCategoryListRes = {
+    data: mockCategoryList,
+    isPending: false,
+    isError: false,
+    error: "",
+  } as unknown as ReturnType<typeof useGetCategoryList>;
+
+  it("should navigate to NotFound page when component is not loading and current category is not found", () => {
     vi.mocked(useParams).mockReturnValue({
-      parentSlug: "incorrectSlug",
+      parentSlug: "men",
     });
+
+    vi.mocked(useGetCategoryList).mockReturnValue({
+      ...mockUseGetCategoryListRes,
+      data: undefined,
+    } as ReturnType<typeof useGetCategoryList>);
 
     render(<Category />);
 
@@ -60,10 +77,33 @@ describe("category component", () => {
     });
   });
 
+  it("should render ServerError with exact message on error occurred", () => {
+    vi.mocked(useParams).mockReturnValue({
+      parentSlug: "women",
+    });
+
+    vi.mocked(useGetCategoryList).mockReturnValue({
+      ...mockUseGetCategoryListRes,
+      isError: true,
+      error: new Error("Failed to load category"),
+    } as ReturnType<typeof useGetCategoryList>);
+
+    render(<Category />);
+
+    const errComponent = screen.getByTestId("server-error");
+    expect(errComponent).toBeInTheDocument();
+    expect(errComponent).toHaveTextContent("Failed to load category");
+  });
+
   it("should render CampaignHeroBanner and ParentCategoryDetail on success", () => {
     vi.mocked(useParams).mockReturnValue({
       parentSlug: "women",
     });
+
+    vi.mocked(useGetCategoryList).mockReturnValue({
+      ...mockUseGetCategoryListRes,
+      isError: false,
+    } as ReturnType<typeof useGetCategoryList>);
 
     render(<Category />);
 

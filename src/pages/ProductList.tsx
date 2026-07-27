@@ -7,17 +7,22 @@ import { ServerError } from "./ServerError";
 import { useGetCategoryList } from "@/hooks/useCategory";
 import type { IParentCategory } from "@/services/category";
 import { extractErrorMsg } from "@/utils/error";
+import { useEffect } from "react";
 
 export const ProductList = () => {
   const { parentSlug, childSlug } = useParams<{
-    parentSlug?: string;
-    childSlug?: string;
+    parentSlug: string;
+    childSlug: string;
   }>();
 
-  const { data: categoryList } = useGetCategoryList();
+  const navigate = useNavigate();
+
+  const { data: categoryList, isPending: isCategoryLoading } =
+    useGetCategoryList();
+
   const {
     data: products,
-    isLoading,
+    isPending: isGetProductListPending,
     isError,
     error,
   } = useGetProductList(parentSlug ?? "", childSlug);
@@ -26,18 +31,26 @@ export const ProductList = () => {
   const currentCategoryList = categories.find((c) => c.slug === parentSlug);
   const productList = (products as IProduct[]) || [];
 
+  useEffect(() => {
+    if (!isCategoryLoading) {
+      const isParentSlugValid = categories.some((c) => c.slug === parentSlug);
+      if (!isParentSlugValid) {
+        navigate("/not-found", { replace: true });
+        return;
+      }
+    }
+  }, [parentSlug, categoryList, isCategoryLoading]);
+
   const currentChildCategory = currentCategoryList?.children?.find(
     (c) => c.slug === parentSlug,
   );
 
-  const navigate = useNavigate();
+  if (isError) {
+    const msg = extractErrorMsg(error);
+    return <ServerError message={msg} />;
+  }
 
-   if (isError) {
-      const msg = extractErrorMsg(error)
-      return <ServerError message={msg} />;
-    }
-
-  if (isLoading) return <Loading />;
+  if (isGetProductListPending || isCategoryLoading) return <Loading />;
 
   return (
     <div className="mb-5">

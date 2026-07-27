@@ -26,5 +26,11 @@ export interface IParentCategory extends ICategory {
 export const getCategoryListService = async (): Promise<IParentCategory[]> => {
   const res =
     await axiosClient.get<ApiResponse<IParentCategory[]>>("/category");
-  return res.data.data ?? [];
+
+  const categoryList = res.data.data;
+  if (!categoryList) {
+    throw new Error("Failed to fetch category list!");
+  }
+
+  return categoryList;
 };

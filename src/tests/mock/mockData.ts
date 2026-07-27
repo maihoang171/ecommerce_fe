@@ -1,3 +1,4 @@
+import type { IUser } from "@/services/auth";
 import type { IParentCategory } from "@/services/category";
 import type { IProduct } from "@/services/product";
 
@@ -89,29 +90,6 @@ export const mockCategoryList: IParentCategory[] = [
       },
     ],
   },
-  {
-    id: "3",
-    parentId: null,
-    name: "ACCESSORIES",
-    slug: "accessories",
-    imageUrl: "/assets/categories/accessories-main.jpg",
-    type: "PARENT",
-    children: [
-      {
-        id: "301",
-        name: "Bags",
-        slug: "bags",
-        imageUrl: "/assets/categories/bags.jpg",
-      },
-      {
-        id: "302",
-        name: "Jewelry",
-        slug: "jewelry",
-        imageUrl: "/assets/categories/jewelry.jpg",
-      },
-    ],
-    campaigns: [],
-  },
 ];
 
 export const mockProductList: IProduct[] = [
@@ -130,6 +108,12 @@ export const mockProductList: IProduct[] = [
         color: "Red",
         imageUrl: "/assets/products/floral-dress-red.jpg",
         isPrimary: true,
+      },
+      {
+        id: "img-1-a-2",
+        color: "Red",
+        imageUrl: "/assets/products/floral-dress-red-back.jpg",
+        isPrimary: false,
       },
       {
         id: "img-1-b",
@@ -175,7 +159,58 @@ export const mockProductList: IProduct[] = [
         sku: "DRS-FLR-BLU-M",
       },
     ],
-    relatedProducts: []
+    relatedProducts: [
+      {
+        id: "prod-2",
+        name: "Evening Slip Dress",
+        price: 120.0,
+        description: "Elegant silk slip dress for formal occasions.",
+        categoryId: "101",
+        images: [
+          {
+            id: "img-2-a",
+            color: "Black",
+            imageUrl: "/assets/products/slip-dress-black.jpg",
+            isPrimary: true,
+          },
+        ],
+        variants: [
+          {
+            id: "var-2-sm-blk",
+            size: "S",
+            color: "Black",
+            stockQuantity: 8,
+            sku: "DRS-SLP-BLK-S",
+          },
+        ],
+        relatedProducts: [],
+      },
+      {
+        id: "prod-3",
+        name: "Casual Cotton Sun Dress",
+        price: 45.0,
+        description: "Comfortable cotton dress for everyday wear.",
+        categoryId: "101",
+        images: [
+          {
+            id: "img-3-a",
+            color: "Yellow",
+            imageUrl: "/assets/products/sun-dress-yellow.jpg",
+            isPrimary: true,
+          },
+        ],
+        variants: [
+          {
+            id: "var-3-sm-ylw",
+            size: "S",
+            color: "Yellow",
+            stockQuantity: 15,
+            sku: "DRS-SUN-YLW-S",
+          },
+        ],
+        relatedProducts: [],
+      },
+    ],
   },
   {
     id: "prod-2",
@@ -207,6 +242,12 @@ export const mockProductList: IProduct[] = [
         sku: "DRS-SLP-BLK-M",
       },
     ],
-    relatedProducts: []
+    relatedProducts: [],
   },
 ];
+
+export const mockUserData: IUser = {
+  id: "1",
+  username: "user1",
+  isAdmin: false,
+};

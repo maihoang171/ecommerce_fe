@@ -7,7 +7,7 @@ interface IItem {
   quantity: number;
   productVariant: IProductVariant;
 }
-interface ICart {
+export interface ICart {
   id: number;
   userId: number;
   items: IItem[];
@@ -27,7 +27,7 @@ export const addToCartService = async (
 
   const cart = res.data.data;
   if (!cart) {
-    throw new Error("Some thing went wrong went add item to cart!");
+    throw new Error("Failed when add item to cart!");
   }
 
   return cart;
