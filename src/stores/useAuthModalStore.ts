@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-type AuthMode = "login" | "register" | null;
+export type AuthMode = "login" | "register" | null;
 
 interface AuthModalState {
   authMode: AuthMode;

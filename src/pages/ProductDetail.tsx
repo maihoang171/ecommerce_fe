@@ -1,7 +1,5 @@
 import { useGetProduct } from "@/hooks/useProduct";
-import { useProductStore } from "@/stores/useProductStore";
-import { useEffect, useMemo } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { Navigate, useParams, useSearchParams } from "react-router-dom";
 import { ProductColorSelector } from "@/components/Body/ProductColorSelector";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
@@ -11,36 +9,75 @@ import { Autoplay, Pagination } from "swiper/modules";
 import { Loading } from "@/components/Body/Loading";
 import { ProductSizeSelector } from "@/components/Body/ProductSizeSelector";
 import { ProductCard } from "@/components/Body/ProductCard";
-import type { IProduct } from "@/services/product";
+import { useAddToCart } from "@/hooks/useCart";
+import { useAuthStore } from "@/stores/useAuthStore";
+import type { IAddToCartPayLoad } from "@/services/cart";
+import { ServerError } from "./ServerError";
+import { extractErrorMsg } from "@/utils/error";
+
 export const ProductDetail = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
+  const { user } = useAuthStore();
 
-  const { product, productList, setProduct } = useProductStore();
-
-  const { handleGetProduct, isLoading } = useGetProduct();
+  const {
+    data: product,
+    isPending: isGetProductPending,
+    isError: isErrorGetProduct,
+    error: getProductError,
+  } = useGetProduct(id ?? "");
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const categoryId = searchParams.get("categoryId");
   const selectedColor = searchParams.get("color");
   const selectedSize = searchParams.get("size");
 
-  useEffect(() => {
-    setProduct({} as IProduct);
+  const {
+    mutate: handleAddToCart,
+    isPending: isAddToCartPending,
+    error: addToCartError,
+  } = useAddToCart();
 
-    if (
-      !id ||
-      isNaN(Number(id)) ||
-      !categoryId ||
-      isNaN(Number(categoryId)) ||
-      !selectedColor
-    ) {
-      navigate("/not-found", { replace: true });
-      return;
-    }
+  const activeImages = product?.images
+    ? product.images.filter((img) => img.color === selectedColor)
+    : [];
 
-    handleGetProduct(id, categoryId);
-  }, [id, categoryId, selectedColor]);
+  const stockQuantity = product?.variants
+    ? selectedSize
+      ? (product.variants.find(
+          (v) => v.color === selectedColor && v.size === selectedSize,
+        )?.stockQuantity ?? 0)
+      : product.variants
+          .filter((v) => v.color === selectedColor)
+          .reduce((total, v) => total + v.stockQuantity, 0)
+    : 0;
+
+  const isInvalidId = !id || isNaN(Number(id));
+  const isInvalidColor = !selectedColor;
+
+  if (isInvalidId || isInvalidColor) {
+    return <Navigate to="not-found" replace />;
+  }
+
+  if (isGetProductPending) {
+    return <Loading />;
+  }
+
+  if (isErrorGetProduct) {
+    const msg = extractErrorMsg(getProductError);
+    return <ServerError message={msg} />;
+  }
+
+  if (!product) return <Navigate to="not-found" replace />;
+
+  const onAddToCart = () => {
+    const payload: IAddToCartPayLoad = {
+      userId: Number(user?.id),
+      productId: Number(product.id),
+      color: selectedColor,
+      size: selectedSize!, 
+    };
+
+    handleAddToCart({ payload, product });
+  };
 
   const handleSelectColor = (color: string) => {
     const nextParams = new URLSearchParams(searchParams);
@@ -55,34 +92,6 @@ export const ProductDetail = () => {
     nextParams.set("size", size);
     setSearchParams(nextParams);
   };
-
-  const activeImages = useMemo(() => {
-    if (!product || !product.images) return [];
-
-    return product.images.filter((img) => img.color === selectedColor);
-  }, [product, selectedColor]);
-
-  const stockQuantity = useMemo(() => {
-    if (!product || !product.variants) return 0;
-
-    if (selectedSize)
-      return (
-        product.variants.find(
-          (v) => v.color === selectedColor && v.size === selectedSize,
-        )?.stockQuantity ?? 0
-      );
-
-    //return all items when no size is selected
-    return product.variants
-      .filter((v) => v.color === selectedColor)
-      .reduce((total, v) => total + v.stockQuantity, 0);
-  }, [product, selectedColor, selectedSize]);
-
-  if (isLoading || !product) {
-    return <Loading />;
-  }
-
-  const relatedProducts = productList.filter((p) => p.id != product.id);
 
   return (
     <div>
@@ -108,9 +117,11 @@ export const ProductDetail = () => {
         <div className="flex-1 mt-5 space-y-5 md:px-12 ">
           <div className="font-bold text-2xl">{product.name}</div>
 
-          {product.discountPrice ? (
+          {product?.discountPrice ? (
             <div className="flex flex-row gap-5">
-              <div className="text-red-500">${product.discountPrice}</div>
+              <div className="text-red-500" data-testid="discount-price">
+                ${product.discountPrice}
+              </div>
               <div className="line-through">${product.price}</div>
             </div>
           ) : (
@@ -122,19 +133,19 @@ export const ProductDetail = () => {
           <div>
             {" "}
             <div className="font-bold">{selectedColor}</div>
-            <div className="text-sm">Only {stockQuantity} items left</div>
+            <div className="text-sm" data-testid="stock-quantity">Only {stockQuantity} items left</div>
           </div>
 
           <ProductColorSelector
             product={product}
-            selectedColor={selectedColor || ""}
+            selectedColor={selectedColor}
             onSelectColor={handleSelectColor}
           />
 
           <ProductSizeSelector
             product={product}
-            selectedColor={selectedColor || ""}
-            selectedSize={selectedSize || ""}
+            selectedColor={selectedColor}
+            selectedSize={selectedSize ?? ""}
             onSelectSize={handleSelectSize}
           />
 
@@ -145,9 +156,26 @@ export const ProductDetail = () => {
             </button>
           </div>
 
+          {addToCartError && (
+            <div className="text-red-400 text-center">
+              {extractErrorMsg(addToCartError)}
+            </div>
+          )}
           {/* Handle add to cart */}
-          <button className="my-4 w-full p-3 bg-black text-white hover:cursor-pointer hover:bg-gray-500 text-xl">
-            Add to cart
+          <button
+            onClick={onAddToCart}
+            type="submit"
+            className="my-4 w-full p-3 bg-black text-white hover:cursor-pointer hover:bg-gray-500 text-xl disabled:bg-gray-400"
+            disabled={!selectedSize}
+          >
+            {isAddToCartPending ? (
+              <div
+                className="loading loading-spinner"
+                data-testid="add-to-cart-loading"
+              />
+            ) : (
+              <p>Add to cart</p>
+            )}
           </button>
         </div>
       </section>
@@ -167,8 +195,8 @@ export const ProductDetail = () => {
             },
           }}
         >
-          {relatedProducts.map((rp) => (
-            <SwiperSlide>
+          {product?.relatedProducts?.map((rp) => (
+            <SwiperSlide key={rp.id}>
               <div className="p-2">
                 <ProductCard product={rp} />
               </div>

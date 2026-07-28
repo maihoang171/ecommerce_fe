@@ -28,9 +28,7 @@ export const ProductCard = ({ product }: IProductCardProps) => {
     product.images[0];
 
   return (
-    <Link
-      to={`/product/${product.id}?categoryId=${product.categoryId}&color=${selectedColor}`}
-    >
+    <Link to={`/product/${product.id}?color=${selectedColor}`}>
       <div className="group cursor-pointer aspect-square">
         <div className="relative overflow-hidden ">
           <img

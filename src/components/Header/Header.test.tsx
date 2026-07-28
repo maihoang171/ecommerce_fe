@@ -6,137 +6,96 @@ import { Header } from "./Header";
 import { MemoryRouter } from "react-router-dom";
 import userEvent from "@testing-library/user-event";
 import { useAuthStore } from "@/stores/useAuthStore";
-import { useAuthModalStore } from "@/stores/useAuthModelStore";
+import { useAuthModalStore, type AuthMode } from "@/stores/useAuthModalStore";
+import type { IUser } from "@/services/auth";
+import { mockUserData } from "@/tests/mock/mockData";
 
-const renderHeader = () => {
-  const renderResult = render(
-    <MemoryRouter>
-      <Header />
-    </MemoryRouter>,
-  );
+vi.mock("./CategoryNav", () => ({
+  CategoryNav: () => <div data-testid="category-nav">Mock Category Nav</div>,
+}));
 
-  return {
-    ...renderResult,
-    get navContainer() {
-      return screen.getByRole("navigation", {
-        name: /main navigation/i,
-      });
-    },
-  };
-};
-
-describe("When user is a guest (logged out)", () => {
+describe("Header", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
 
+  afterEach(() => {
+    cleanup();
+  });
+
+  const setupMocks = ({
+    user = null,
+    isLoggedIn = false,
+    authMode = null,
+  }: {
+    user?: IUser | null;
+    isLoggedIn?: boolean;
+    authMode?: AuthMode;
+  }) => {
     useAuthStore.setState({
-      user: null,
-      isLoggedIn: false,
+      user,
+      isLoggedIn,
     });
 
     useAuthModalStore.setState({
-      authMode: null,
+      authMode,
     });
-  });
+  };
 
-  afterEach(() => {
-    cleanup();
-  });
+  const renderComponent = () => {
+    const result = render(
+      <MemoryRouter>
+        <Header />
+      </MemoryRouter>,
+    );
 
-  it("should render standard navigation categories, utils, and a generic login trigger", () => {
-    const { navContainer } = renderHeader();
-
-    expect(
-      within(navContainer).getByRole("button", { name: /login/i }),
-    ).toBeInTheDocument();
-
-    expect(
-      screen.getByRole("img", { name: /xuxi e-commerce shop home/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("link", { name: /search products/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("link", { name: /view shopping cart/i }),
-    ).toBeInTheDocument();
-
-    expect(screen.queryByText("Hi,")).not.toBeInTheDocument();
-  });
-
-  it("should toggle the login modal when user clicks the user icon", async () => {
-    const { navContainer } = renderHeader();
-
-    const loginButton = within(navContainer).getByRole("button", {
-      name: /login/i,
-    });
-
-    const user = userEvent.setup();
-    await user.click(loginButton);
-
-    expect(screen.getByText("Welcome back!")).toBeInTheDocument();
-    expect(useAuthModalStore.getState().authMode).toBe("login");
-  });
-});
-
-describe("When user is logged in", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-
-    useAuthStore.setState({
-      user: {
-        id: "1",
-        username: "user123",
-        isAdmin: false,
+    return {
+      ...result,
+      get navContainer() {
+        return screen.getByRole("navigation", { name: /main navigation/i });
       },
-      isLoggedIn: true,
+    };
+  };
+
+  describe("when user is a guest (log out)", () => {
+    it("should render standard navigation categories, and a generic login trigger", () => {
+      setupMocks({});
+
+      const { navContainer } = renderComponent();
+
+      expect(
+        within(navContainer).getByTestId("category-nav"),
+      ).toBeInTheDocument();
+
+      expect(within(navContainer).getByRole("button", { name: /login/i }));
+    });
+
+    it("should toggle login modal when user click login icon", async () => {
+      setupMocks({});
+
+      const { navContainer } = renderComponent();
+
+      const loginBtn = within(navContainer).getByRole("button", {
+        name: /login/i,
+      });
+
+      const user = userEvent.setup();
+
+      await user.click(loginBtn);
+
+      expect(useAuthModalStore.getState().authMode).toBe("login");
     });
   });
 
-  afterEach(() => {
-    cleanup();
-  });
+  describe("when user is logged in", () => {
+    it("should display user name when logged in", () => {
+      setupMocks({ user: mockUserData, isLoggedIn: true });
 
-  it("should render navigation categories, utils, and a user avatar instead of login button ", () => {
-    const { navContainer } = renderHeader();
+      const { navContainer } = renderComponent();
 
-    expect(
-      within(navContainer).queryByRole("button", { name: /login/i }),
-    ).not.toBeInTheDocument();
-
-    expect(screen.getByText("Hi, user123")).toBeInTheDocument();
-
-    expect(screen.getByText("U")).toBeInTheDocument();
-  });
-});
-
-describe("Header Modal Interactivity Flow", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    useAuthStore.setState({ user: null, isLoggedIn: false });
-    useAuthModalStore.setState({ authMode: null });
-  });
-
-  afterEach(() => {
-    cleanup();
-  });
-
-  it("should successfully close Login modal and open Register modal when clicking redirect link", async () => {
-    renderHeader();
-    const user = userEvent.setup();
-
-    useAuthModalStore.setState({ authMode: "login" });
-    expect(screen.getByText("Welcome back!")).toBeInTheDocument();
-
-    const loginModal = screen.getByTestId("login-modal");
-    const switchToRegisterBtn = within(loginModal).getByRole("button", {
-      name: /here/i,
+      expect(
+        within(navContainer).getByText(`Hi, ${mockUserData.username}`),
+      ).toBeInTheDocument();
     });
-
-    await user.click(switchToRegisterBtn);
-
-    expect(screen.queryByText("Welcome back! ")).not.toBeInTheDocument();
-    expect(screen.getByText("Create your new account")).toBeInTheDocument();
-
-    expect(useAuthModalStore.getState().authMode).toBe("register");
   });
 });

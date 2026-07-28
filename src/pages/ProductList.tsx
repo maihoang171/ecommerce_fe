@@ -1,102 +1,92 @@
-import { useParams } from "react-router-dom";
-import { useProductStore } from "@/stores/useProductStore";
-import { useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { useGetProductList } from "@/hooks/useProduct";
 import { ProductCard } from "@/components/Body/ProductCard";
-import { useCategoryStore } from "@/stores/useCategoryStore";
-import type { ICategory } from "@/services/category";
-import { useNavigate } from "react-router-dom";
 import { Loading } from "@/components/Body/Loading";
+import type { IProduct } from "@/services/product";
+import { ServerError } from "./ServerError";
+import { useGetCategoryList } from "@/hooks/useCategory";
+import type { IParentCategory } from "@/services/category";
+import { extractErrorMsg } from "@/utils/error";
+import { useEffect } from "react";
 
 export const ProductList = () => {
-  const { productList } = useProductStore();
-  const { handleGetProductList, isLoading } = useGetProductList();
-
-  const { parentSlug, childSlug } = useParams();
-  const {
-    categoryList,
-    activeParentCategory,
-    activeChildCategory,
-    setActiveParentCategory,
-    setActiveChildCategory,
-  } = useCategoryStore();
+  const { parentSlug, childSlug } = useParams<{
+    parentSlug: string;
+    childSlug: string;
+  }>();
 
   const navigate = useNavigate();
 
-  const displayProductList = productList.filter(
-    (p) => p.categoryId === activeChildCategory?.id,
-  );
+  const { data: categoryList, isPending: isCategoryLoading } =
+    useGetCategoryList();
+
+  const {
+    data: products,
+    isPending: isGetProductListPending,
+    isError,
+    error,
+  } = useGetProductList(parentSlug ?? "", childSlug);
+
+  const categories = (categoryList as IParentCategory[]) || [];
+  const currentCategoryList = categories.find((c) => c.slug === parentSlug);
+  const productList = (products as IProduct[]) || [];
 
   useEffect(() => {
-    if (!parentSlug) {
-      navigate("/not-found", { replace: true });
-      return;
-    }
-
-    handleGetProductList(parentSlug, childSlug);
-
-    if (categoryList.length > 0) {
-      const parent = categoryList.find((c) => c.slug === parentSlug);
-
-      if (!parent) {
-        navigate("/not-found", { replace: true });
-        return;
-      }
-
-      setActiveParentCategory(parent);
-
-      const child = parent?.children.find((c) => c.slug === childSlug);
-      setActiveChildCategory(child);
-
-      if (!childSlug || !child) {
+    if (!isCategoryLoading) {
+      const isParentSlugValid = categories.some((c) => c.slug === parentSlug);
+      if (!isParentSlugValid) {
         navigate("/not-found", { replace: true });
         return;
       }
     }
-  }, [childSlug, parentSlug, categoryList]);
+  }, [parentSlug, categoryList, isCategoryLoading]);
 
-  const handleClickChildCategory = (child: ICategory) => {
-    setActiveChildCategory(child);
-    navigate(`/${activeParentCategory?.slug}/${child.slug}`);
-  };
+  const currentChildCategory = currentCategoryList?.children?.find(
+    (c) => c.slug === parentSlug,
+  );
 
-  if (isLoading || !displayProductList) return <Loading />;
+  if (isError) {
+    const msg = extractErrorMsg(error);
+    return <ServerError message={msg} />;
+  }
 
-  if (displayProductList.length > 0)
-    return (
-      <div className="mb-5">
-        <div className="text-3xl font-bold">{activeChildCategory?.name}</div>
+  if (isGetProductListPending || isCategoryLoading) return <Loading />;
 
-        <div className="flex gap-5 mt-5 text-xl border-b border-gray-300 hover:overflow-x-auto flex-nowrap font-light">
-          {activeParentCategory?.children.map((c) => {
-            const isSelected = activeChildCategory?.id === c.id;
-            return (
-              <button
-                key={c.id}
-                className={`${isSelected ? "border-b-2 border-black" : ""} hover:cursor-pointer  shrink-0`}
-                onClick={() => handleClickChildCategory(c)}
-              >
-                {c.name}
-              </button>
-            );
-          })}
-        </div>
-        <div className="my-5 text-sm text-gray-500">
-          {displayProductList.length} products
-        </div>
+  return (
+    <div className="mb-5">
+      <div className="text-3xl font-bold">{currentChildCategory?.name}</div>
+
+      <div className="flex gap-5 mt-5 text-xl border-b border-gray-300 hover:overflow-x-auto flex-nowrap font-light">
+        {currentCategoryList?.children.map((c) => {
+          const isSelected = childSlug === c.slug;
+          return (
+            <button
+              key={c.id}
+              className={`${isSelected ? "border-b-2 border-black" : ""} hover:cursor-pointer  shrink-0`}
+              onClick={() => navigate(`/${parentSlug}/${c.slug}`)}
+            >
+              {c.name}
+            </button>
+          );
+        })}
+      </div>
+      <div className="my-5 text-sm text-gray-500">
+        {productList.length} products
+      </div>
+
+      {productList.length > 0 ? (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-          {displayProductList.map((p) => (
+          {productList.map((p) => (
             <div key={p.id}>
               <ProductCard product={p} />
             </div>
           ))}
         </div>
-      </div>
-    );
-
-  return (
-    <div className="w-full min-h-[70vh] flex justify-center items-center">
-      No products has found
+      ) : (
+        <div className="w-full min-h-[70vh] flex justify-center items-center">
+          No products has found
+        </div>
+      )}
     </div>
   );
 };

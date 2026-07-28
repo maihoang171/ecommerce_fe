@@ -27,25 +27,35 @@ export interface IProduct {
   discountEndAt?: string;
   images: IProductImage[];
   variants: IProductVariant[];
+  relatedProducts: IProduct[];
 }
 
 export const getProductListByCategorySlugService = async (
   parentSlug: string,
   childSlug?: string,
-) => {
+): Promise<IProduct[]> => {
   const url = childSlug
     ? `category/${parentSlug}/${childSlug}`
     : `category/${parentSlug}`;
 
   const res = await axiosClient.get<ApiResponse<IProduct[]>>(url);
 
-  return res.data;
+  const productList = res.data.data;
+
+  if (!productList) {
+    throw new Error("Failed to fetch product list!");
+  }
+
+  return productList;
 };
 
-export const getProductService = async (id: string, categoryId: string) => {
-  const res = await axiosClient.get<ApiResponse<IProduct>>(
-    `product/${id}?categoryId=${categoryId}`,
-  );
-  
-  return res.data;
+export const getProductService = async (id: string): Promise<IProduct> => {
+  const res = await axiosClient.get<ApiResponse<IProduct>>(`product/${id}`);
+
+  const product = res.data.data;
+  if (!product) {
+    throw new Error(`Product with ID ${id} not found`);
+  }
+
+  return product;
 };

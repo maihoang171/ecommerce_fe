@@ -1,77 +1,101 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
+import { afterEach, beforeEach, describe, vi, it, expect } from "vitest";
+import { cleanup, render, screen } from "@testing-library/react";
 import { Home } from "./Home";
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
-import { useCampaignStore } from "@/stores/useCampaignStore";
 import { useGetCampaignList } from "@/hooks/useCampaign";
-import { mockCategoryList } from "@/tests/mock/mockData";
+import type { ICampaign } from "@/services/category";
 
-vi.mock("@/components/Body/CampaignHeroBanner", () => ({
-  CampaignHeroBanner: () => (
-    <div data-testid="campaignHeroBanner">
-      Mock CampaignHeroBanner component
-    </div>
-  ),
-}));
-
-vi.mock("@/components/Body/Loading", () => ({
-  Loading: () => (
-    <div data-testid="loading-spinner">Mock loading component</div>
-  ),
-}));
-
+// Mock the campaign hook
 vi.mock("@/hooks/useCampaign", () => ({
   useGetCampaignList: vi.fn(),
 }));
 
-vi.mock("@/stores/useCampaignStore", () => ({
-  useCampaignStore: vi.fn(),
+// Mock sub-components to keep unit tests isolated
+vi.mock("@/components/Body/Loading", () => ({
+  Loading: () => <div data-testid="loading-spinner">Loading...</div>,
 }));
 
-const setup = (overrides = {}) => {
-  vi.mocked(useGetCampaignList).mockReturnValue({
-    handleGetCampaignList: vi.fn(),
-    isLoading: false,
-    ...overrides,
-  });
-};
+vi.mock("@/components/Body/CampaignHeroBanner", () => ({
+  CampaignHeroBanner: ({ campaign }: { campaign: ICampaign }) => (
+    <div data-testid="campaign-banner">{campaign.title}</div>
+  ),
+}));
+
+vi.mock("./ServerError", () => ({
+  ServerError: ({ message }: { message?: string }) => (
+    <div data-testid="server-error">{message || "Server Error"}</div>
+  ),
+}));
 
 describe("Home component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("should render message category list is empty", () => {
-    setup();
-    vi.mocked(useCampaignStore).mockReturnValue({
-      campaignList: [],
-    });
-
-    render(<Home />);
-
-    expect(screen.getByText("Welcome to XuXi Clothes")).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        "We are currently updating our catalog. Check back soon!",
-      ),
-    ).toBeInTheDocument();
+  afterEach(() => {
+    cleanup();
   });
 
-  it("should render campaign list when category list is not empty", () => {
-    setup();
-    vi.mocked(useCampaignStore).mockReturnValue({
-      campaignList: mockCategoryList[0].campaigns,
-    });
+  it("should render loading spinner when isLoading is true", () => {
+    vi.mocked(useGetCampaignList).mockReturnValue({
+      data: undefined,
+      isLoading: true,
+      isError: false,
+      error: null,
+    } as unknown as ReturnType<typeof useGetCampaignList>);
 
     render(<Home />);
 
-    expect(screen.getAllByTestId("campaignHeroBanner")).toHaveLength(2);
-  });
-
-  it("should display loading spinner when fetching data", () => {
-    setup({ isLoading: true });
-    render(<Home />);
     expect(screen.getByTestId("loading-spinner")).toBeInTheDocument();
+  });
+
+  it("should render ServerError with extracted message when an error occurs", () => {
+    vi.mocked(useGetCampaignList).mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: true,
+      error: new Error("Failed to fetch campaigns"),
+    } as unknown as ReturnType<typeof useGetCampaignList>);
+
+    render(<Home />);
+
+    const serverError = screen.getByTestId("server-error");
+    expect(serverError).toBeInTheDocument();
+    expect(serverError).toHaveTextContent("Failed to fetch campaigns");
+  });
+
+  it("should render campaign banners when campaign list has items", () => {
+    const mockCampaigns = [
+      { id: "1", title: "Summer Sale" },
+      { id: "2", title: "Winter Collection" },
+    ];
+
+    vi.mocked(useGetCampaignList).mockReturnValue({
+      data: mockCampaigns,
+      isLoading: false,
+      isError: false,
+      error: null,
+    } as unknown as ReturnType<typeof useGetCampaignList>);
+
+    render(<Home />);
+
+    const banners = screen.getAllByTestId("campaign-banner");
+    expect(banners).toHaveLength(2);
+    expect(screen.getByText("Summer Sale")).toBeInTheDocument();
+    expect(screen.getByText("Winter Collection")).toBeInTheDocument();
+  });
+
+  it("should render ServerError fallback when campaign list is empty", () => {
+    vi.mocked(useGetCampaignList).mockReturnValue({
+      data: [],
+      isLoading: false,
+      isError: false,
+      error: null,
+    } as unknown as ReturnType<typeof useGetCampaignList>);
+
+    render(<Home />);
+
+    expect(screen.getByTestId("server-error")).toBeInTheDocument();
   });
 });

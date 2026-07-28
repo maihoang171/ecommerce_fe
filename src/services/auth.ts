@@ -1,7 +1,7 @@
 import { axiosClient } from "./axios";
 import type { ApiResponse } from "./type";
 
-interface IAuthPayload {
+export interface IAuthPayload {
   username: string;
   password: string;
 }

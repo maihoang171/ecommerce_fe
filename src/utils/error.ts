@@ -4,8 +4,8 @@ export const extractErrorMsg = (error: unknown): string => {
   let errMsg = "Something went wrong";
 
   if (isAxiosError(error)) {
-    console.log(error);
     errMsg = error.response?.data?.message || errMsg;
+    console.log(error.response?.data?.message);
   } else if (error instanceof Error) {
     errMsg = error.message;
   }

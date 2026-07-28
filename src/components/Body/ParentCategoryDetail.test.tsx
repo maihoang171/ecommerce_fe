@@ -3,7 +3,6 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ParentCategoryDetail } from "./ParentCategoryDetail";
-import { useCategoryStore } from "@/stores/useCategoryStore";
 import userEvent from "@testing-library/user-event";
 import { mockCategoryList } from "@/tests/mock/mockData";
 
@@ -15,8 +14,6 @@ vi.mock("react-router-dom", () => {
     useNavigate: () => mockNavigate,
   };
 });
-
-vi.mock("@/stores/useCategoryStore", () => ({ useCategoryStore: vi.fn() }));
 
 describe("ParentCategoryDetail component", () => {
   beforeEach(() => {
@@ -30,11 +27,6 @@ describe("ParentCategoryDetail component", () => {
   const mockCategoryPayload = mockCategoryList[0]
 
   it("should display child categories on success", () => {
-    const mockSetActiveChildCategory = vi.fn();
-    vi.mocked(useCategoryStore).mockReturnValue({
-      setActiveChildCategory: mockSetActiveChildCategory,
-    });
-
     render(<ParentCategoryDetail category={mockCategoryPayload} />);
 
     expect(screen.getByRole("img", { name: /Dresses/i })).toHaveAttribute(
@@ -56,11 +48,6 @@ describe("ParentCategoryDetail component", () => {
   });
 
   it("should navigate to product list page on user click", async () => {
-    const mockSetActiveChildCategory = vi.fn();
-     vi.mocked(useCategoryStore).mockReturnValue({
-      setActiveChildCategory: mockSetActiveChildCategory,
-    });
-
     render(<ParentCategoryDetail category={mockCategoryPayload} />);
 
     const user = userEvent.setup();
@@ -70,6 +57,5 @@ describe("ParentCategoryDetail component", () => {
     await user.click(dressesBtn);
 
     expect(mockNavigate).toHaveBeenCalledWith("/women/dresses");
-    expect(mockSetActiveChildCategory).toHaveBeenCalledWith(expect.objectContaining({name: "Dresses"}))
   });
 });

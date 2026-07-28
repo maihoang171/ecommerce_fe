@@ -33,6 +33,7 @@ export const ProductSizeSelector = ({
         return (
           <button
             key={size}
+            aria-label={size}
             disabled={isOutOfStock}
             onClick={() => onSelectSize(size as string)}
             className={`min-w-16 px-4 py-2 border hover:cursor-pointer ${

@@ -1,25 +1,32 @@
-import { useEffect } from "react";
 import { CampaignHeroBanner } from "@/components/Body/CampaignHeroBanner";
-import { useCampaignStore } from "@/stores/useCampaignStore";
 import { useGetCampaignList } from "@/hooks/useCampaign";
 import { Loading } from "@/components/Body/Loading";
+import { ServerError } from "./ServerError";
+import type { ICampaign } from "@/services/category";
+import { extractErrorMsg } from "@/utils/error";
 
 export const Home = () => {
-  const { campaignList } = useCampaignStore();
-  const { handleGetCampaignList, isLoading } = useGetCampaignList();
+  const {
+    data: campaignList,
+    isLoading,
+    isError,
+    error,
+  } = useGetCampaignList();
+  const currentCampaignList = campaignList as ICampaign[];
 
-  useEffect(() => {
-    handleGetCampaignList();
-  }, []);
-
-  if(isLoading){
-    return <Loading />
+  if (isLoading) {
+    return <Loading />;
   }
-  
-  if (campaignList.length > 0) {
+
+  if (isError) {
+     const msg = extractErrorMsg(error)
+     return <ServerError message={msg} />;
+   }
+
+  if (currentCampaignList.length > 0) {
     return (
       <div className="hero-banner-container">
-        {campaignList.map((c) => (
+        {currentCampaignList.map((c) => (
           <div key={c.id}>
             <CampaignHeroBanner campaign={c} />
           </div>
@@ -28,12 +35,5 @@ export const Home = () => {
     );
   }
 
-  return (
-    <div className="w-full min-h-[70vh] flex flex-col justify-center items-center bg-base-100">
-      <h2 className="text-2xl font-bold">Welcome to XuXi Clothes</h2>
-      <p className="text-gray-500 mt-2">
-        We are currently updating our catalog. Check back soon!
-      </p>
-    </div>
-  );
+  return <ServerError />;
 };
