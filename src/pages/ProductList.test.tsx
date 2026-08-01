@@ -5,17 +5,17 @@ import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { ProductList } from "./ProductList";
-import { useGetProductList } from "@/hooks/useProduct";
-import { useGetCategoryList } from "@/hooks/useCategory";
-import type { IProduct } from "@/services/product";
-import { mockCategoryList, mockProductList } from "@/tests/mock/mockData";
-import type { IParentCategory } from "@/services/category";
+import { useGetProductList } from "@/features/product/hooks/useProduct";
+import { useGetCategoryList } from "@/features/category/hooks/useCategory";
+import type { IProduct } from "@/features/product/services/product";
+import { mockCategoryList, mockProductList } from "@/tests/mockData";
+import type { IParentCategory } from "@/features/category/services/category";
 
-vi.mock("@/hooks/useProduct", () => ({
+vi.mock("@/features/product/hooks/useProduct", () => ({
   useGetProductList: vi.fn(),
 }));
 
-vi.mock("@/hooks/useCategory", () => ({
+vi.mock("@/features/category/hooks/useCategory", () => ({
   useGetCategoryList: vi.fn(),
 }));
 
@@ -30,17 +30,17 @@ vi.mock("react-router-dom", async () => {
   };
 });
 
-vi.mock("@/components/Body/Loading", () => ({
+vi.mock("@/components/Loading", () => ({
   Loading: () => <div data-testid="loading-spinner">Loading...</div>,
 }));
 
-vi.mock("@/components/Body/ProductCard", () => ({
+vi.mock("@/features/product/components/ProductCard", () => ({
   ProductCard: ({ product }: { product: IProduct }) => (
     <div data-testid="product-card">{product.name}</div>
   ),
 }));
 
-vi.mock("./ServerError", () => ({
+vi.mock("@/pages/ServerError", () => ({
   ServerError: ({ message }: { message: string }) => (
     <div data-testid="server-error">{message}</div>
   ),
@@ -66,7 +66,7 @@ describe("ProductList Component", () => {
     isGetProductsError = false,
     getProductsError = null,
     parentSlug = "women",
-    childSlug = "dresses"
+    childSlug = "dresses",
   }: {
     categoriesData?: IParentCategory[] | null;
     productsData?: IProduct[] | null;
@@ -77,10 +77,11 @@ describe("ProductList Component", () => {
     parentSlug?: string | null;
     childSlug?: string | null;
   } = {}) => {
-      vi.mocked(mockUseParams).mockReturnValue({ parentSlug, childSlug});
+    vi.mocked(mockUseParams).mockReturnValue({ parentSlug, childSlug });
 
     vi.mocked(useGetCategoryList).mockReturnValue({
-      data: categoriesData, isPending: isGetCategoryPending
+      data: categoriesData,
+      isPending: isGetCategoryPending,
     } as unknown as ReturnType<typeof useGetCategoryList>);
 
     vi.mocked(useGetProductList).mockReturnValue({
@@ -156,20 +157,20 @@ describe("ProductList Component", () => {
   });
 
   it("should fallback empty array and return not found page when category is null or undefined", () => {
-    setupMocks({categoriesData: null})
+    setupMocks({ categoriesData: null });
 
-    renderComponent()
+    renderComponent();
 
     expect(mockNavigate).toHaveBeenCalledWith("/not-found", { replace: true });
-
   });
 
   it("should not call navigate when category pending is true", () => {
-     setupMocks({isGetCategoryPending: true})
+    setupMocks({ isGetCategoryPending: true });
 
-    renderComponent()
+    renderComponent();
 
-    expect(mockNavigate).not.toHaveBeenCalledWith("/not-found", { replace: true });
-
-  })
+    expect(mockNavigate).not.toHaveBeenCalledWith("/not-found", {
+      replace: true,
+    });
+  });
 });

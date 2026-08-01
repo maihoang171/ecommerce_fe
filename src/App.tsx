@@ -1,18 +1,18 @@
 import { useEffect } from "react";
-import { useSyncAuthSession } from "./hooks/useAuth";
+import { useSyncAuthSession } from "./features/auth/hooks/useAuth";
 import { AppRoute } from "./routes/AppRoute";
 import "./index.css";
 import { Toaster } from "sonner";
 import logo from "./assets/logo.png";
 
 function App() {
-  const { handleSyncAuthSession, isCheckingAuth } = useSyncAuthSession();
+  const { mutate: handleSyncAuthSession, isPending } = useSyncAuthSession();
 
   useEffect(() => {
     handleSyncAuthSession();
   }, []);
 
-  return isCheckingAuth ? (
+  return isPending ? (
     <div className="fixed inset-0 h-screen w-screen flex justify-center items-center">
       <img
         src={logo}

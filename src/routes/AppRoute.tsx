@@ -2,7 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import { Home } from "../pages/Home";
 import { Category } from "../pages/Category";
 import { ProductList } from "../pages/ProductList";
-import { RootLayout } from "@/layouts/RootLayout";
+import { RootLayout } from "@/pages/layouts/RootLayout";
 import { NotFound } from "@/pages/NotFound";
 import { ProductDetail } from "@/pages/ProductDetail";
 

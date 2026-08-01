@@ -1,8 +1,8 @@
-import { CampaignHeroBanner } from "@/components/Body/CampaignHeroBanner";
-import { useGetCampaignList } from "@/hooks/useCampaign";
-import { Loading } from "@/components/Body/Loading";
-import { ServerError } from "./ServerError";
-import type { ICampaign } from "@/services/category";
+import { CampaignHeroBanner } from "@/features/campaign/components/CampaignHeroBanner";
+import { useGetCampaignList } from "@/features/campaign/hooks/useCampaign";
+import { Loading } from "@/components/Loading";
+import { ServerError } from "@/pages/ServerError";
+import type { ICampaign } from "@/features/category/services/category";
 import { extractErrorMsg } from "@/utils/error";
 
 export const Home = () => {
@@ -19,9 +19,9 @@ export const Home = () => {
   }
 
   if (isError) {
-     const msg = extractErrorMsg(error)
-     return <ServerError message={msg} />;
-   }
+    const msg = extractErrorMsg(error);
+    return <ServerError message={msg} />;
+  }
 
   if (currentCampaignList.length > 0) {
     return (

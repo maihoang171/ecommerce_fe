@@ -2,7 +2,7 @@
 import "@testing-library/jest-dom/vitest";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { ServerError } from "./ServerError";
+import { ServerError } from "@/pages/ServerError";
 
 describe("ServerError Component", () => {
   it("should render default message when no prop is provided", () => {
