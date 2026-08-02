@@ -1,14 +1,13 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { CampaignHeroBanner } from "@/components/Body/CampaignHeroBanner";
-import { ParentCategoryDetail } from "@/components/Body/ParentCategoryDetail";
-import type { IParentCategory } from "@/services/category";
+import { CampaignHeroBanner } from "@/features/campaign/components/CampaignHeroBanner";
+import { ParentCategoryDetail } from "@/features/category/components/ParentCategoryDetail";
+import type { IParentCategory } from "@/features/category/services/category";
 import { useEffect } from "react";
-import { ServerError } from "./ServerError";
-import { useGetCategoryList } from "@/hooks/useCategory";
+import { ServerError } from "@/pages/ServerError";
+import { useGetCategoryList } from "@/features/category/hooks/useCategory";
 import { extractErrorMsg } from "@/utils/error";
 
 export const Category = () => {
-
   const { parentSlug } = useParams<{ parentSlug?: string }>();
   const {
     data: categoryList = [],

@@ -3,9 +3,9 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Category } from "./Category";
-import { mockCategoryList } from "@/tests/mock/mockData";
+import { mockCategoryList } from "@/tests/mockData";
 import { useParams } from "react-router-dom";
-import { useGetCategoryList } from "@/hooks/useCategory";
+import { useGetCategoryList } from "../features/category/hooks/useCategory";
 
 const mockNavigate = vi.fn();
 vi.mock("react-router-dom", async () => {
@@ -17,11 +17,11 @@ vi.mock("react-router-dom", async () => {
   };
 });
 
-vi.mock("@/hooks/useCategory", () => ({
+vi.mock("@/features/category/hooks/useCategory", () => ({
   useGetCategoryList: vi.fn(),
 }));
 
-vi.mock("./ServerError", () => ({
+vi.mock("@/pages/ServerError", () => ({
   ServerError: ({ message }: { message: string }) => (
     <div data-testid="server-error" data-message={message}>
       {message}
@@ -29,7 +29,7 @@ vi.mock("./ServerError", () => ({
   ),
 }));
 
-vi.mock("../components/Body/CampaignHeroBanner", () => ({
+vi.mock("@/features/campaign/components/CampaignHeroBanner", () => ({
   CampaignHeroBanner: () => (
     <div data-testid="mock-campaign-hero-banner">
       Fake CampaignHeroBanner component
@@ -37,13 +37,14 @@ vi.mock("../components/Body/CampaignHeroBanner", () => ({
   ),
 }));
 
-vi.mock("../components/Body/ParentCategoryDetail", () => ({
+vi.mock("@/features/category/components/ParentCategoryDetail", () => ({
   ParentCategoryDetail: () => (
     <div data-testid="mock-parent-category-detail">
       Mock ParentCategoryDetail
     </div>
   ),
 }));
+
 describe("category component", () => {
   beforeEach(() => {
     vi.clearAllMocks();

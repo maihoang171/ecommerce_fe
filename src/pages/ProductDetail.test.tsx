@@ -10,10 +10,10 @@ import {
 import { MemoryRouter, useParams, useSearchParams } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, test, vi } from "vitest";
 import { ProductDetail } from "./ProductDetail";
-import { useGetProduct } from "@/hooks/useProduct";
-import { useAddToCart } from "@/hooks/useCart";
-import { mockProductList } from "@/tests/mock/mockData";
-import type { IProduct } from "@/services/product";
+import { useGetProduct } from "@/features/product/hooks/useProduct";
+import { useAddToCart } from "@/features/cart/hooks/useCart";
+import { mockProductList } from "@/tests/mockData";
+import type { IProduct } from "@/features/product/services/product";
 import userEvent from "@testing-library/user-event";
 
 //stimulate matchMedia
@@ -45,21 +45,21 @@ vi.mock("react-router-dom", async (importOriginal) => {
   };
 });
 
-vi.mock("@/hooks/useProduct", () => ({
+vi.mock("@/features/product/hooks/useProduct", () => ({
   useGetProduct: vi.fn(),
 }));
 
-vi.mock("@/hooks/useCart", () => ({
+vi.mock("@/features/cart/hooks/useCart", () => ({
   useAddToCart: vi.fn(),
 }));
 
-vi.mock("@/components/Body/Loading", () => ({
+vi.mock("@/components/Loading", () => ({
   Loading: () => (
     <div data-testid="loading-component">Mock Loading component</div>
   ),
 }));
 
-vi.mock("./ServerError", () => ({
+vi.mock("@/pages/ServerError", () => ({
   ServerError: ({ message }: { message?: string }) => (
     <div data-testid="server-error">{message || "Server is crashed"}</div>
   ),
@@ -330,29 +330,29 @@ describe("product detail component", () => {
     setupMocks({
       id: "1",
       product: mockProductList[0],
-      searchParams: "color=Pink&size=40"
-    })
+      searchParams: "color=Pink&size=40",
+    });
 
-    renderComponent()
+    renderComponent();
 
-    const stockQuantity = screen.getByTestId("stock-quantity")
-    expect(stockQuantity).toHaveTextContent("0")
-  })
-
- it("should not call handleAddToCart when size is not selected", () => {
-  setupMocks({
-    id: "1",
-    product: mockProductList[0],
-    searchParams: "color=Red",
+    const stockQuantity = screen.getByTestId("stock-quantity");
+    expect(stockQuantity).toHaveTextContent("0");
   });
 
-  renderComponent();
+  it("should not call handleAddToCart when size is not selected", () => {
+    setupMocks({
+      id: "1",
+      product: mockProductList[0],
+      searchParams: "color=Red",
+    });
 
-  const addToCartBtn = screen.getByRole("button", { name: /Add to cart/i });
+    renderComponent();
 
-  (addToCartBtn as HTMLButtonElement).disabled = false;
-  fireEvent.click(addToCartBtn);
+    const addToCartBtn = screen.getByRole("button", { name: /Add to cart/i });
 
-  expect(mockHandleAddToCart).not.toHaveBeenCalled();
-});
+    (addToCartBtn as HTMLButtonElement).disabled = false;
+    fireEvent.click(addToCartBtn);
+
+    expect(mockHandleAddToCart).not.toHaveBeenCalled();
+  });
 });

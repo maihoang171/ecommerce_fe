@@ -1,6 +1,6 @@
 import axios from "axios";
-import { useAuthStore } from "../stores/useAuthStore";
-import type { IUser } from "./auth";
+import { useAuthStore } from "../features/auth/stores/useAuthStore";
+import type { IUser } from "../features/auth/services/auth";
 import type { ApiResponse } from "./type";
 
 export const axiosClient = axios.create({

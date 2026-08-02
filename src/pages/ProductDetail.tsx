@@ -1,23 +1,23 @@
-import { useGetProduct } from "@/hooks/useProduct";
+import { useGetProduct } from "@/features/product/hooks/useProduct";
 import { Navigate, useParams, useSearchParams } from "react-router-dom";
-import { ProductColorSelector } from "@/components/Body/ProductColorSelector";
+import { ProductColorSelector } from "@/features/product/components/ProductColorSelector";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/autoplay";
 import { Autoplay, Pagination } from "swiper/modules";
-import { Loading } from "@/components/Body/Loading";
-import { ProductSizeSelector } from "@/components/Body/ProductSizeSelector";
-import { ProductCard } from "@/components/Body/ProductCard";
-import { useAddToCart } from "@/hooks/useCart";
-import { useAuthStore } from "@/stores/useAuthStore";
-import type { IAddToCartPayLoad } from "@/services/cart";
-import { ServerError } from "./ServerError";
+import { Loading } from "@/components/Loading";
+import { ProductSizeSelector } from "../features/product/components/ProductSizeSelector";
+import { ProductCard } from "../features/product/components/ProductCard";
+import { useAddToCart } from "@/features/cart/hooks/useCart";
+import type { ICartItem } from "@/features/cart/services/cart";
+import { ServerError } from "@/pages/ServerError";
 import { extractErrorMsg } from "@/utils/error";
+import { ProductQuantitySelector } from "../features/product/components/ProductQuantitySelector";
+import { useState } from "react";
 
 export const ProductDetail = () => {
   const { id } = useParams();
-  const { user } = useAuthStore();
 
   const {
     data: product,
@@ -29,6 +29,8 @@ export const ProductDetail = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedColor = searchParams.get("color");
   const selectedSize = searchParams.get("size");
+
+  const [quantity, setQuantity] = useState<number>(1);
 
   const {
     mutate: handleAddToCart,
@@ -69,14 +71,14 @@ export const ProductDetail = () => {
   if (!product) return <Navigate to="not-found" replace />;
 
   const onAddToCart = () => {
-    const payload: IAddToCartPayLoad = {
-      userId: Number(user?.id),
+    const cartItem: ICartItem = {
       productId: Number(product.id),
       color: selectedColor,
-      size: selectedSize!, 
+      size: selectedSize!,
+      quantity: quantity,
     };
 
-    handleAddToCart({ payload, product });
+    handleAddToCart({ cartItem, product });
   };
 
   const handleSelectColor = (color: string) => {
@@ -95,9 +97,9 @@ export const ProductDetail = () => {
 
   return (
     <div>
-      <section className="flex flex-col md:gap-5 md:flex-row h-full lg:h-2/3">
+      <section className="flex flex-col md:gap-5 md:flex-row h-full ">
         <Swiper
-          className="w-full md:w-3/5 h-full"
+          className="w-full md:w-3/5 lg:w-1/2"
           modules={[Pagination, Autoplay]}
           pagination={{ clickable: true }}
           autoplay={{
@@ -106,15 +108,12 @@ export const ProductDetail = () => {
         >
           {activeImages.map((image) => (
             <SwiperSlide key={image.id}>
-              <img
-                src={image.imageUrl}
-                className="w-full lg:h-2/3 object-cover"
-              />
+              <img src={image.imageUrl} className="w-full object-cover" />
             </SwiperSlide>
           ))}
         </Swiper>
 
-        <div className="flex-1 mt-5 space-y-5 md:px-12 ">
+        <div className="flex-1 mt-5 space-y-5 lg:px-48 lg:pt-16">
           <div className="font-bold text-2xl">{product.name}</div>
 
           {product?.discountPrice ? (
@@ -133,7 +132,9 @@ export const ProductDetail = () => {
           <div>
             {" "}
             <div className="font-bold">{selectedColor}</div>
-            <div className="text-sm" data-testid="stock-quantity">Only {stockQuantity} items left</div>
+            <div className="text-sm" data-testid="stock-quantity">
+              Only {stockQuantity} items left
+            </div>
           </div>
 
           <ProductColorSelector
@@ -162,21 +163,29 @@ export const ProductDetail = () => {
             </div>
           )}
           {/* Handle add to cart */}
-          <button
-            onClick={onAddToCart}
-            type="submit"
-            className="my-4 w-full p-3 bg-black text-white hover:cursor-pointer hover:bg-gray-500 text-xl disabled:bg-gray-400"
-            disabled={!selectedSize}
-          >
-            {isAddToCartPending ? (
-              <div
-                className="loading loading-spinner"
-                data-testid="add-to-cart-loading"
-              />
-            ) : (
-              <p>Add to cart</p>
-            )}
-          </button>
+
+          <div className="flex flex-rows gap-2 h-16 my-4 py-3">
+            <ProductQuantitySelector
+              quantity={quantity}
+              stockQuantity={stockQuantity}
+              onQuantityChange={setQuantity}
+            />
+            <button
+              onClick={onAddToCart}
+              type="submit"
+              className="w-full bg-black text-white hover:cursor-pointer hover:bg-gray-500 text-xl disabled:bg-gray-400"
+              disabled={!selectedSize}
+            >
+              {isAddToCartPending ? (
+                <div
+                  className="loading loading-spinner"
+                  data-testid="add-to-cart-loading"
+                />
+              ) : (
+                <p className="text-sm">Add to cart</p>
+              )}
+            </button>
+          </div>
         </div>
       </section>
 

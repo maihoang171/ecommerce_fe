@@ -1,11 +1,11 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { useGetProductList } from "@/hooks/useProduct";
-import { ProductCard } from "@/components/Body/ProductCard";
-import { Loading } from "@/components/Body/Loading";
-import type { IProduct } from "@/services/product";
-import { ServerError } from "./ServerError";
-import { useGetCategoryList } from "@/hooks/useCategory";
-import type { IParentCategory } from "@/services/category";
+import { useGetProductList } from "@/features/product/hooks/useProduct";
+import { ProductCard } from "@/features/product/components/ProductCard";
+import { Loading } from "@/components/Loading";
+import type { IProduct } from "@/features/product/services/product";
+import { ServerError } from "@/pages/ServerError";
+import { useGetCategoryList } from "@/features/category/hooks/useCategory";
+import type { IParentCategory } from "@/features/category/services/category";
 import { extractErrorMsg } from "@/utils/error";
 import { useEffect } from "react";
 

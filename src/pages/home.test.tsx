@@ -2,27 +2,25 @@
 import "@testing-library/jest-dom/vitest";
 import { afterEach, beforeEach, describe, vi, it, expect } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
-import { Home } from "./Home";
-import { useGetCampaignList } from "@/hooks/useCampaign";
-import type { ICampaign } from "@/services/category";
+import { Home } from "@/pages/Home";
+import { useGetCampaignList } from "@/features/campaign/hooks/useCampaign";
+import type { ICampaign } from "@/features/category/services/category";
 
-// Mock the campaign hook
-vi.mock("@/hooks/useCampaign", () => ({
+vi.mock("@/features/campaign/hooks/useCampaign", () => ({
   useGetCampaignList: vi.fn(),
 }));
 
-// Mock sub-components to keep unit tests isolated
-vi.mock("@/components/Body/Loading", () => ({
+vi.mock("@/components/Loading", () => ({
   Loading: () => <div data-testid="loading-spinner">Loading...</div>,
 }));
 
-vi.mock("@/components/Body/CampaignHeroBanner", () => ({
+vi.mock("@/features/campaign/components/CampaignHeroBanner", () => ({
   CampaignHeroBanner: ({ campaign }: { campaign: ICampaign }) => (
     <div data-testid="campaign-banner">{campaign.title}</div>
   ),
 }));
 
-vi.mock("./ServerError", () => ({
+vi.mock("@/pages/ServerError", () => ({
   ServerError: ({ message }: { message?: string }) => (
     <div data-testid="server-error">{message || "Server Error"}</div>
   ),
