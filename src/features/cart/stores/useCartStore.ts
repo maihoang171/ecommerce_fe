@@ -13,12 +13,17 @@ interface ICartState {
   setCart: (cart: ICartItem[]) => void;
   getLocalCart: () => ICartItem[];
   addToLocalCart: (item: ICartItem, stockLimit?: number) => void;
-  updateQuantity: (productId: number, color: string, size: string, quantity: number) => void;
+  updateQuantity: (
+    productId: number,
+    color: string,
+    size: string,
+    quantity: number,
+  ) => void;
   clearLocalCart: () => void;
   getTotalQuantity: () => number;
 }
 
-const LOCAL_STORAGE_KEY = "guest_cart";
+export const LOCAL_STORAGE_KEY = "guest_cart";
 
 export const useCartStore = create<ICartState>((set, get) => ({
   cart: JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "[]"),
@@ -35,7 +40,7 @@ export const useCartStore = create<ICartState>((set, get) => ({
       (item) =>
         item.productId === newItem.productId &&
         item.color === newItem.color &&
-        item.size === newItem.size
+        item.size === newItem.size,
     );
 
     const updatedCart = [...currentCart];
@@ -57,7 +62,11 @@ export const useCartStore = create<ICartState>((set, get) => ({
 
   updateQuantity: (productId, color, size, newQuantity) => {
     const updatedCart = get().cart.map((item) => {
-      if (item.productId === productId && item.color === color && item.size === size) {
+      if (
+        item.productId === productId &&
+        item.color === color &&
+        item.size === size
+      ) {
         return { ...item, quantity: newQuantity };
       }
       return item;

@@ -12,11 +12,11 @@ export const ProductQuantitySelector = ({
   onQuantityChange,
 }: IQuantitySelectorProps) => {
   const handleMinus = () => {
-    if (quantity > 1) onQuantityChange(quantity - 1);
+    onQuantityChange(quantity - 1);
   };
 
   const handlePlus = () => {
-    if (quantity < stockQuantity) onQuantityChange(quantity + 1);
+    onQuantityChange(quantity + 1);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -30,12 +30,14 @@ export const ProductQuantitySelector = ({
       onQuantityChange(val);
     }
   };
+
   return (
     <div className="flex flex-rows gap-5 border rounded-2xl">
       <button
         onClick={handleMinus}
         disabled={quantity <= 1}
         className="hover:cursor-pointer disabled:text-gray-400"
+        aria-label="minus-btn"
       >
         <Minus className="w-4 h-4" />
       </button>
@@ -46,11 +48,13 @@ export const ProductQuantitySelector = ({
         min={1}
         max={stockQuantity}
         className="w-4 text-center text-sm  [&::-webkit-inner-spin-button]:appearance-none focus:outline-none"
+        data-testid="quantity-input"
       />
       <button
         onClick={handlePlus}
         disabled={quantity >= stockQuantity}
         className="hover:cursor-pointer disabled:text-gray-400"
+        aria-label="plus-btn"
       >
         <Plus className="w-4 h-4 " />
       </button>

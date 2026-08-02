@@ -41,7 +41,9 @@ describe("Header", () => {
     cleanup();
   });
 
-  const mockHandleLogout = vi.fn();
+  const mockHandleLogout = vi.fn(() => {
+    useAuthStore.getState().clearAuth();
+  });
   const setupMocks = ({
     user = null,
     authMode = null,
@@ -52,7 +54,13 @@ describe("Header", () => {
     cart?: ICartItem[];
   } = {}) => {
     useAuthModalStore.setState({ authMode });
-    useAuthStore.setState({ user });
+
+    if (user) {
+      useAuthStore.getState().setAuth(user, "token");
+    } else {
+      useAuthStore.getState().clearAuth();
+    }
+
     useCartStore.setState({ cart: cart as ICartItem[] });
 
     vi.mocked(useLogout).mockReturnValue({
@@ -117,6 +125,9 @@ describe("Header", () => {
       expect(
         within(navContainer).getByText(`Hi, ${mockUserData.username}`),
       ).toBeInTheDocument();
+
+      expect(useAuthStore.getState().user).toEqual(mockUserData);
+      expect(useAuthStore.getState().accessToken).toEqual("token");
     });
 
     it("should log out when clicked", async () => {
