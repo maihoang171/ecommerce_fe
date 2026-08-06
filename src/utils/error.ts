@@ -1,7 +1,7 @@
 import { isAxiosError } from "axios";
 
 export const extractErrorMsg = (error: unknown): string => {
-  let errMsg = "Something went wrong";
+  let errMsg = "Something went wrong. Please try again later!";
 
   if (isAxiosError(error)) {
     errMsg = error.response?.data?.message || errMsg;

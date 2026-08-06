@@ -7,11 +7,10 @@ import type {
   ICategory,
   IParentCategory,
 } from "@/features/category/services/category";
-import { ServerError } from "@/pages/ServerError";
 
 export const CategoryNav = () => {
   const { parentSlug } = useParams<{ parentSlug?: string }>();
-  const { data: categoryList = [], isError } = useGetCategoryList();
+  const { data: categoryList = [] } = useGetCategoryList();
   const navigate = useNavigate();
   const [isOpenMenu, setIsOpenMenu] = useState(false);
   const [hoveredSlug, setHoveredSlug] = useState<string | null>(null);
@@ -20,7 +19,6 @@ export const CategoryNav = () => {
 
   const activeCategorySlug = hoveredSlug || parentSlug;
 
-  if (isError) return <ServerError />;
 
   const displayCategory =
     categories.find((c) => c.slug === activeCategorySlug) ?? categories[0];
