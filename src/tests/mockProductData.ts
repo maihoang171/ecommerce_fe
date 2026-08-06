@@ -31,6 +31,7 @@ export const mockProducts: IProduct[] = [
         color: "Red",
         stockQuantity: 0,
         sku: "DRS-FLR-RED-S",
+        product: {} as IProduct,
       },
       {
         id: 2,
@@ -38,6 +39,7 @@ export const mockProducts: IProduct[] = [
         color: "Red",
         stockQuantity: 5,
         sku: "DRS-FLR-RED-M",
+        product: {} as IProduct,
       },
       {
         id: 3,
@@ -45,6 +47,7 @@ export const mockProducts: IProduct[] = [
         color: "Red",
         stockQuantity: 2,
         sku: "DRS-FLR-RED-L",
+        product: {} as IProduct,
       },
       {
         id: 4,
@@ -52,6 +55,7 @@ export const mockProducts: IProduct[] = [
         color: "Blue",
         stockQuantity: 10,
         sku: "DRS-FLR-BLU-S",
+        product: {} as IProduct,
       },
       {
         id: 5,
@@ -59,6 +63,7 @@ export const mockProducts: IProduct[] = [
         color: "Blue",
         stockQuantity: 0,
         sku: "DRS-FLR-BLU-M",
+        product: {} as IProduct,
       },
     ],
     relatedProducts: [
@@ -83,6 +88,7 @@ export const mockProducts: IProduct[] = [
             color: "Black",
             stockQuantity: 8,
             sku: "DRS-SLP-BLK-S",
+            product: {} as IProduct,
           },
         ],
         relatedProducts: [],
@@ -108,6 +114,7 @@ export const mockProducts: IProduct[] = [
             color: "Yellow",
             stockQuantity: 15,
             sku: "DRS-SUN-YLW-S",
+            product: {} as IProduct,
           },
         ],
         relatedProducts: [],
@@ -135,6 +142,7 @@ export const mockProducts: IProduct[] = [
         color: "Black",
         stockQuantity: 8,
         sku: "DRS-SLP-BLK-S",
+        product: {} as IProduct,
       },
       {
         id: 2,
@@ -142,6 +150,7 @@ export const mockProducts: IProduct[] = [
         color: "Black",
         stockQuantity: 12,
         sku: "DRS-SLP-BLK-M",
+        product: {} as IProduct,
       },
     ],
     relatedProducts: [],

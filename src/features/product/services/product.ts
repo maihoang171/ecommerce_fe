@@ -14,7 +14,7 @@ export interface IProductVariant {
   color: string;
   stockQuantity: number;
   sku: string;
-  product?: IProduct;
+  product: IProduct;
 }
 
 export interface IProduct {

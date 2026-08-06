@@ -10,7 +10,7 @@ export const mockAuthSuccessResponse = {
   success: true,
   accessToken: "mockAccessToken",
   data: {
-    id: "usr-123",
+    id: 1,
     username: "Username123",
     isAdmin: false,
   },

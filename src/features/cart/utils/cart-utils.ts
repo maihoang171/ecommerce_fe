@@ -24,7 +24,7 @@ export const getNormalizedCartItems = (
   if (user && dbCart?.items) {
     return dbCart.items.map((item) => ({
       id: item.id,
-      productId: Number(item.productVariant.product?.id),
+      productId: item.productVariant.product?.id,
       color: item.productVariant.color,
       size: item.productVariant.size,
       quantity: item.quantity,
@@ -38,7 +38,7 @@ export const getNormalizedCartItems = (
 
   return localCart.map((item, index) => ({
     id: `local-${item.productId}-${item.color}-${item.size}-${index}`,
-    productId: Number(item.productId),
+    productId: item.productId,
     color: item.color,
     size: item.size,
     quantity: item.quantity,
