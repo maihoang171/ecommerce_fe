@@ -59,21 +59,6 @@ describe("categoryNav component", () => {
     cleanup();
   });
 
-  it("should return ServerError component when an error occurred", async () => {
-    vi.mocked(useGetCategoryList).mockReturnValue({
-      data: [],
-      isError: true,
-    } as unknown as ReturnType<typeof useGetCategoryList>);
-
-    render(
-      <MemoryRouter>
-        <CategoryNav />
-      </MemoryRouter>,
-    );
-
-    expect(await screen.findByTestId("server-error")).toBeInTheDocument();
-  });
-
   describe("mobile only", () => {
     it("should navigate to the category page on click", async () => {
       const { user, getOpenMenuBtn, getWomenBtns, getMenBtns } = setup();

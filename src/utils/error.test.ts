@@ -26,7 +26,7 @@ describe("extractErrorMessage utility", () => {
       },
     };
 
-    expect(extractErrorMsg(err)).toBe("Something went wrong");
+    expect(extractErrorMsg(err)).toBe("Something went wrong. Please try again later!");
   });
 
   it("should handle standard error instance", () => {
@@ -35,7 +35,7 @@ describe("extractErrorMessage utility", () => {
   });
 
   it("should return default error message", () => {
-    const err = "Something went wrong";
+    const err = "Something went wrong. Please try again later!";
     expect(extractErrorMsg(err)).toBe(err);
   });
 });
