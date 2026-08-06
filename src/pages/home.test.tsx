@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, vi, it, expect } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { Home } from "@/pages/Home";
 import { useGetCampaignList } from "@/features/campaign/hooks/useCampaign";
-import type { ICampaign } from "@/features/category/services/category";
+import type { ICampaign } from "@/features/campaign/services/campaign";
 
 vi.mock("@/features/campaign/hooks/useCampaign", () => ({
   useGetCampaignList: vi.fn(),

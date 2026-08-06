@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { ArrowRightIcon } from "lucide-react";
-import type { ICampaign } from "@/features/category/services/category";
+import type { ICampaign } from "../services/campaign";
 
 interface CampaignHeroBannerProps {
   campaign: ICampaign;

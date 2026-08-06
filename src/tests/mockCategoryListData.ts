@@ -1,5 +1,5 @@
+import type { ICampaign } from "@/features/campaign/services/campaign";
 import type {
-  ICampaign,
   ICategory,
   IParentCategory,
 } from "@/features/category/services/category";
