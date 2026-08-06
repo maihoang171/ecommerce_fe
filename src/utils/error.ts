@@ -5,7 +5,6 @@ export const extractErrorMsg = (error: unknown): string => {
 
   if (isAxiosError(error)) {
     errMsg = error.response?.data?.message || errMsg;
-    console.log(error.response?.data?.message);
   } else if (error instanceof Error) {
     errMsg = error.message;
   }

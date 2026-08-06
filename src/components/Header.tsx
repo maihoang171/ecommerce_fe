@@ -9,14 +9,25 @@ import { CategoryNav } from "../features/category/components/CategoryNav";
 import { LoginModal } from "../features/auth/components/LoginModal";
 import { RegisterModal } from "../features/auth/components/RegisterModal";
 import { useCartStore } from "@/features/cart/stores/useCartStore";
+import { useGetCart } from "@/features/cart/hooks/useCart";
+import { useMemo } from "react";
 
 export const Header = () => {
   const { openLogin } = useAuthModalStore();
   const { user } = useAuthStore();
   const { mutate: handleLogout } = useLogout();
-  const localCart = useCartStore((state) => state.cart);
-  const localTotal = localCart.reduce((sum, item) => sum + item.quantity, 0);
 
+  const localCart = useCartStore((state) => state.cart);
+  const localTotal = useMemo(
+    () => localCart.reduce((sum, item) => sum + item.quantity, 0),
+    [localCart],
+  );
+
+  const { data: dbCart } = useGetCart();
+  const dbTotal = useMemo(
+    () => (dbCart?.items ?? []).reduce((sum, item) => sum + item.quantity, 0),
+    [dbCart?.items],
+  );
   const userInitial = getInitials(user?.username ?? "");
 
   return (
@@ -56,7 +67,7 @@ export const Header = () => {
                 <Search className="w-5 h-5 md:w-6 md:h-6" strokeWidth={1.5} />
               </Link>
               <Link
-                to=""
+                to="/cart"
                 aria-label="View Shopping Cart"
                 className="hover:text-gray-500 transition-colors relative p-1 hover:cursor-pointer"
               >
@@ -64,7 +75,7 @@ export const Header = () => {
 
                 {/* TODO: update product quantity */}
                 <span className="absolute -bottom-4 left-1/2 -translate-x-1/2 scale-75 md:scale-100">
-                  {localTotal}
+                  {user ? dbTotal : localTotal}
                 </span>
               </Link>
 

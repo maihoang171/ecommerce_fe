@@ -3,9 +3,9 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ProductSizeSelector } from "./ProductSizeSelector";
-import { mockProductList } from "@/tests/mockData";
 import userEvent from "@testing-library/user-event";
 import type { IProduct } from "@/features/product/services/product";
+import { mockProducts } from "@/tests/mockProductData";
 
 describe("product size selector component", () => {
   beforeEach(() => {
@@ -33,9 +33,9 @@ describe("product size selector component", () => {
   it("should display all product sizes with selected color", () => {
     render(
       <ProductSizeSelector
-        product={mockProductList[0]}
-        selectedColor={mockProductList[0].variants[0].color}
-        selectedSize={mockProductList[0].variants[0].size}
+        product={mockProducts[0]}
+        selectedColor={mockProducts[0].variants[0].color}
+        selectedSize={mockProducts[0].variants[0].size}
         onSelectSize={mockOnSelectSize}
       />,
     );
@@ -46,14 +46,14 @@ describe("product size selector component", () => {
   it("should call onSelectSize with correct size when clicked and display correct class for selected size", async () => {
     const { rerender } = render(
       <ProductSizeSelector
-        product={mockProductList[0]}
+        product={mockProducts[0]}
         selectedColor={"Red"}
         selectedSize={"M"}
         onSelectSize={(size) => {
           mockOnSelectSize(size);
           rerender(
             <ProductSizeSelector
-              product={mockProductList[0]}
+              product={mockProducts[0]}
               selectedColor={"Red"}
               selectedSize={size}
               onSelectSize={mockOnSelectSize}

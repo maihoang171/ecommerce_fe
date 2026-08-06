@@ -4,7 +4,7 @@ import {
   getProductListByCategorySlugService,
   getProductService,
 } from "@/features/product/services/product";
-import { mockProductList } from "@/tests/mockData";
+import { mockProducts } from "@/tests/mockProductData";
 
 vi.mock("@/services/axios", () => ({
   axiosClient: {
@@ -38,7 +38,7 @@ describe("product service", () => {
       const mockUrl = `category/${mockParentSlug}/${mockChildSlug}`;
 
       vi.mocked(axiosClient.get).mockResolvedValueOnce({
-        data: { success: true, data: mockProductList },
+        data: { success: true, data: mockProducts },
       });
 
       const result = await getProductListByCategorySlugService(
@@ -46,7 +46,7 @@ describe("product service", () => {
         mockChildSlug,
       );
 
-      expect(result).toEqual(mockProductList);
+      expect(result).toEqual(mockProducts);
       expect(axiosClient.get).toHaveBeenCalledWith(mockUrl);
     });
   });
@@ -54,13 +54,13 @@ describe("product service", () => {
   describe("getProductService", () => {
     it("should fetch and return product data successfully when response is valid", async () => {
       vi.mocked(axiosClient.get).mockResolvedValueOnce({
-        data: { data: mockProductList[0] },
+        data: { data: mockProducts[0] },
       });
 
       const result = await getProductService("1");
 
       expect(axiosClient.get).toHaveBeenCalledWith("product/1");
-      expect(result).toEqual(mockProductList[0]);
+      expect(result).toEqual(mockProducts[0]);
     });
 
     it("should throw an error if the product data is missing in the response", async () => {

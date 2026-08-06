@@ -4,7 +4,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ParentCategoryDetail } from "./ParentCategoryDetail";
 import userEvent from "@testing-library/user-event";
-import { mockCategoryList } from "@/tests/mockData";
+import { mockCategoryList } from "@/tests/mockCategoryListData";
 
 const mockNavigate = vi.fn();
 vi.mock("react-router-dom", () => {
@@ -37,14 +37,10 @@ describe("ParentCategoryDetail component", () => {
       "src",
       mockCategoryPayload.children[1].imageUrl,
     );
-    expect(screen.getByRole("img", { name: /Bottoms/i })).toHaveAttribute(
-      "src",
-      mockCategoryPayload.children[2].imageUrl,
-    );
+
 
     expect(screen.getByText("Dresses")).toBeInTheDocument();
     expect(screen.getByText("Tops")).toBeInTheDocument();
-    expect(screen.getByText("Bottoms")).toBeInTheDocument();
   });
 
   it("should navigate to product list page on user click", async () => {

@@ -3,7 +3,10 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Category } from "./Category";
-import { mockCategoryList } from "@/tests/mockData";
+import {
+  mockCategoryList,
+  mockWomenCampaigns,
+} from "@/tests/mockCategoryListData";
 import { useParams } from "react-router-dom";
 import { useGetCategoryList } from "../features/category/hooks/useCategory";
 
@@ -108,7 +111,9 @@ describe("category component", () => {
 
     render(<Category />);
 
-    expect(screen.getAllByTestId("mock-campaign-hero-banner")).toHaveLength(2);
+    expect(screen.getAllByTestId("mock-campaign-hero-banner")).toHaveLength(
+      mockWomenCampaigns.length,
+    );
 
     expect(
       screen.getByTestId("mock-parent-category-detail"),

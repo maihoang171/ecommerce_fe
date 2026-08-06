@@ -12,9 +12,11 @@ import { afterEach, beforeEach, describe, expect, it, test, vi } from "vitest";
 import { ProductDetail } from "./ProductDetail";
 import { useGetProduct } from "@/features/product/hooks/useProduct";
 import { useAddToCart } from "@/features/cart/hooks/useCart";
-import { mockProductList } from "@/tests/mockData";
 import type { IProduct } from "@/features/product/services/product";
 import userEvent from "@testing-library/user-event";
+import { mockProducts } from "@/tests/mockProductData";
+import { useAuthStore } from "@/features/auth/stores/useAuthStore";
+import { mockUser } from "@/tests/mockUserData";
 
 //stimulate matchMedia
 Object.defineProperty(window, "matchMedia", {
@@ -218,7 +220,7 @@ describe("product detail component", () => {
   });
 
   it("should display product details and related products on success", () => {
-    const { product } = setupMocks({ id: "1", product: mockProductList[0] });
+    const { product } = setupMocks({ id: "1", product: mockProducts[0] });
 
     renderComponent();
 
@@ -239,7 +241,7 @@ describe("product detail component", () => {
   it("should display original price when no discount exists", () => {
     setupMocks({
       id: "1",
-      product: mockProductList[1],
+      product: mockProducts[1],
     });
 
     renderComponent();
@@ -251,7 +253,7 @@ describe("product detail component", () => {
   it("should display loading spinner when loading ", () => {
     setupMocks({
       id: "1",
-      product: mockProductList[0],
+      product: mockProducts[0],
       isAddToCartPending: true,
     });
 
@@ -264,7 +266,7 @@ describe("product detail component", () => {
   it("should display message if an error occurred when add to cart", () => {
     setupMocks({
       id: "1",
-      product: mockProductList[0],
+      product: mockProducts[0],
       addToCartError: new Error("Something went wrong"),
     });
 
@@ -276,7 +278,7 @@ describe("product detail component", () => {
   it("should update color in search params when a color is clicked", async () => {
     setupMocks({
       id: "1",
-      product: mockProductList[0],
+      product: mockProducts[0],
     });
 
     renderComponent();
@@ -295,7 +297,7 @@ describe("product detail component", () => {
   it("should update size in search params when a size is clicked", async () => {
     setupMocks({
       id: "1",
-      product: mockProductList[0],
+      product: mockProducts[0],
     });
 
     renderComponent();
@@ -309,12 +311,31 @@ describe("product detail component", () => {
     expect(sizeSearchParams.get("size")).toBe("M");
   });
 
-  it("should call handleAddToCart when clicked", async () => {
+  it("should call handleAddToCart with local cart items when clicked", async () => {
     setupMocks({
       id: "1",
-      product: mockProductList[0],
+      product: mockProducts[0],
       searchParams: "color=Blue&size=M",
     });
+
+    renderComponent();
+
+    const user = userEvent.setup();
+
+    const addToCartBtn = screen.getByRole("button", { name: /Add to cart/i });
+    await user.click(addToCartBtn);
+
+    expect(mockHandleAddToCart).toHaveBeenCalled();
+  });
+
+  it("should call handleAddToCart with db cart item when clicked", async () => {
+    setupMocks({
+      id: "1",
+      product: mockProducts[0],
+      searchParams: "color=Blue&size=M",
+    });
+
+    useAuthStore.getState().setAuth(mockUser, "token")
 
     renderComponent();
 
@@ -329,7 +350,7 @@ describe("product detail component", () => {
   it("should display stock quantity 0 when selected color or selected size not match with variants", () => {
     setupMocks({
       id: "1",
-      product: mockProductList[0],
+      product: mockProducts[0],
       searchParams: "color=Pink&size=40",
     });
 
@@ -342,7 +363,7 @@ describe("product detail component", () => {
   it("should not call handleAddToCart when size is not selected", () => {
     setupMocks({
       id: "1",
-      product: mockProductList[0],
+      product: mockProducts[0],
       searchParams: "color=Red",
     });
 

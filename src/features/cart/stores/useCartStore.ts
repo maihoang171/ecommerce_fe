@@ -1,31 +1,38 @@
+import type { IProductImage } from "@/features/product/services/product";
 import { create } from "zustand";
 
-export interface ICartItem {
+export interface ILocalCartItem {
   productId: number;
   color: string;
   size: string;
   quantity: number;
-  stockQuantity?: number;
+  stockQuantity: number;
+  name: string;
+  price: number;
+  discountPrice?: number | null;
+  images: IProductImage[];
 }
 
-interface ICartState {
-  cart: ICartItem[];
-  setCart: (cart: ICartItem[]) => void;
-  getLocalCart: () => ICartItem[];
-  addToLocalCart: (item: ICartItem, stockLimit?: number) => void;
+interface ILocalCartState {
+  cart: ILocalCartItem[];
+  setCart: (cart: ILocalCartItem[]) => void;
+  getLocalCart: () => ILocalCartItem[];
+  getItemQuantity: (productId: number, color: string, size: string) => number;
+  addToLocalCart: (item: ILocalCartItem) => void;
   updateQuantity: (
     productId: number,
     color: string,
     size: string,
     quantity: number,
   ) => void;
+  removeFromLocalCart: (productId: number, color: string, size: string) => void;
   clearLocalCart: () => void;
   getTotalQuantity: () => number;
 }
 
 export const LOCAL_STORAGE_KEY = "guest_cart";
 
-export const useCartStore = create<ICartState>((set, get) => ({
+export const useCartStore = create<ILocalCartState>((set, get) => ({
   cart: JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "[]"),
 
   setCart: (cart) => set({ cart }),
@@ -34,7 +41,14 @@ export const useCartStore = create<ICartState>((set, get) => ({
     return JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "[]");
   },
 
-  addToLocalCart: (newItem, stockLimit = Infinity) => {
+  getItemQuantity: (productId, color, size) => {
+    const item = get().cart.find(
+      (i) => i.productId === productId && i.color === color && i.size === size
+    );
+    return item ? item.quantity : 0;
+  },
+
+  addToLocalCart: (newItem) => {
     const currentCart = get().cart;
     const existingIndex = currentCart.findIndex(
       (item) =>
@@ -47,12 +61,20 @@ export const useCartStore = create<ICartState>((set, get) => ({
 
     if (existingIndex > -1) {
       const currentQty = updatedCart[existingIndex].quantity;
-      const updatedQty = Math.min(currentQty + newItem.quantity, stockLimit);
-      updatedCart[existingIndex].quantity = updatedQty;
+      const updatedQty = Math.min(
+        currentQty + newItem.quantity,
+        newItem.stockQuantity,
+      );
+
+      updatedCart[existingIndex] = {
+        ...updatedCart[existingIndex],
+        ...newItem,
+        quantity: updatedQty,
+      };
     } else {
       updatedCart.push({
         ...newItem,
-        quantity: Math.min(newItem.quantity, stockLimit),
+        quantity: Math.min(newItem.quantity,  newItem.stockQuantity),
       });
     }
 
@@ -67,10 +89,25 @@ export const useCartStore = create<ICartState>((set, get) => ({
         item.color === color &&
         item.size === size
       ) {
-        return { ...item, quantity: newQuantity };
+        const validateQty = Math.min(newQuantity, item.stockQuantity)
+        return { ...item, quantity: validateQty };
       }
       return item;
     });
+
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedCart));
+    set({ cart: updatedCart });
+  },
+
+  removeFromLocalCart: (productId, color, size) => {
+    const updatedCart = get().cart.filter(
+      (item) =>
+        !(
+          item.productId === productId &&
+          item.color === color &&
+          item.size === size
+        ),
+    );
 
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedCart));
     set({ cart: updatedCart });

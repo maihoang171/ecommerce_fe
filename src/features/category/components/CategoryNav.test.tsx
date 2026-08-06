@@ -6,7 +6,7 @@ import { MemoryRouter } from "react-router-dom";
 import { CategoryNav } from "./CategoryNav";
 import userEvent from "@testing-library/user-event";
 import { useGetCategoryList } from "../hooks/useCategory";
-import { mockCategoryList } from "@/tests/mockData";
+import { mockCategoryList } from "@/tests/mockCategoryListData";
 
 vi.mock("../hooks/useCategory", () => ({
   useGetCategoryList: vi.fn(),

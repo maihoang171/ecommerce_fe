@@ -2,7 +2,7 @@ import type { ApiResponse } from "@/services/type";
 import { axiosClient } from "@/services/axios";
 
 export interface ICategory {
-  id: string;
+  id: number;
   name: string;
   slug: string;
   imageUrl: string;
@@ -10,7 +10,7 @@ export interface ICategory {
 }
 
 export interface ICampaign {
-  id: string;
+  id: number;
   title: string;
   subTitle: string;
   imageUrl: string;
