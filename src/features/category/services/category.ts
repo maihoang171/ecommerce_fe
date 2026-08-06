@@ -1,5 +1,6 @@
 import type { ApiResponse } from "@/services/type";
 import { axiosClient } from "@/services/axios";
+import type { ICampaign } from "@/features/campaign/services/campaign";
 
 export interface ICategory {
   id: number;
@@ -7,14 +8,6 @@ export interface ICategory {
   slug: string;
   imageUrl: string;
   type?: string;
-}
-
-export interface ICampaign {
-  id: number;
-  title: string;
-  subTitle: string;
-  imageUrl: string;
-  linkUrl: string;
 }
 
 export interface IParentCategory extends ICategory {

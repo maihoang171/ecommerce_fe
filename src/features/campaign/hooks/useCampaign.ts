@@ -1,5 +1,4 @@
-import { getCampaignListService } from "../services/campaign";
-import type { ICampaign } from "@/features/category/services/category";
+import { getCampaignListService, type ICampaign } from "../services/campaign";
 import { useQuery } from "@tanstack/react-query";
 
 export const useGetCampaignList = () => {

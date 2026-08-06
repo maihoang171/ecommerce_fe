@@ -6,6 +6,7 @@ import { ProductCard } from "./ProductCard";
 import { MemoryRouter } from "react-router-dom";
 import userEvent from "@testing-library/user-event";
 import { mockProducts } from "@/tests/mockProductData";
+import type { IProduct } from "../services/product";
 
 describe("ProductCard component", () => {
   beforeEach(() => {
@@ -96,6 +97,7 @@ describe("ProductCard component", () => {
         color: "Weird-Red",
         stockQuantity: 0,
         sku: "DRS-FLR-RED-S",
+        product: {} as IProduct
       }],
     };
 
