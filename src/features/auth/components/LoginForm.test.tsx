@@ -10,7 +10,7 @@ import {
   runUsernameTests,
 } from "@/features/auth/utils/__test__/authModalsTest";
 import { useAuthModalStore } from "@/features/auth/stores/useAuthModalStore";
-import { mockUserData } from "@/tests/mockData";
+import { mockUser } from "@/tests/mockUserData";
 
 vi.mock("@/features/auth/hooks/useAuth", () => ({
   useLogin: vi.fn(),
@@ -37,7 +37,6 @@ describe("Login component validation and submission", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // Reset store state before each test
     useAuthModalStore.setState({
       authMode: "login",
     });
@@ -100,7 +99,7 @@ describe("Login component validation and submission", () => {
     setupMocks({});
     vi.mocked(mockHandleLogin).mockImplementation((_variables, options) => {
       options?.onSuccess?.(
-        { user: mockUserData, accessToken: "token" }, // Mocked res data
+        { user: mockUser, accessToken: "token" }, // Mocked res data
         _variables, // Mocked variables
         undefined, // Context
       );

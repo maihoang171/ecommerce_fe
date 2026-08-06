@@ -32,7 +32,7 @@ export const ProductQuantitySelector = ({
   };
 
   return (
-    <div className="flex flex-rows gap-5 border rounded-2xl">
+    <div className="flex flex-rows gap-5 border rounded-2xl justify-center max-w-">
       <button
         onClick={handleMinus}
         disabled={quantity <= 1}

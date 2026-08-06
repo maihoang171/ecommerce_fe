@@ -7,7 +7,7 @@ export interface IAuthPayload {
 }
 
 export interface IUser {
-  id: string;
+  id: number;
   username: string;
   isAdmin: boolean;
 }
@@ -38,7 +38,7 @@ export const getRefreshTokenService = async () => {
   return res.data;
 };
 
-export const logoutService = async (userId: string) => {
+export const logoutService = async (userId: number) => {
   const res = await axiosClient.post<ApiResponse<null>>("/auth/logout", {
     userId,
   });

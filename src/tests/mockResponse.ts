@@ -1,4 +1,5 @@
-import { mockCategoryList, mockProductList } from "./mockData";
+import { mockCategoryList } from "./mockCategoryListData";
+import { mockProducts } from "./mockProductData";
 
 export const mockValidUserDataInput = {
   username: "user1",
@@ -9,7 +10,7 @@ export const mockAuthSuccessResponse = {
   success: true,
   accessToken: "mockAccessToken",
   data: {
-    id: "usr-123",
+    id: 1,
     username: "Username123",
     isAdmin: false,
   },
@@ -27,15 +28,15 @@ export const mockCategoryListResponse = {
 
 export const mockProductListResponse = {
   success: true,
-  data: mockProductList,
+  data: mockProducts,
 };
 
 export const mockProductCardResponse = {
   success: true,
-  data: mockProductList[0],
+  data: mockProducts[0],
 };
 
 export const mockProductResponse = {
   success: true,
-  data: mockProductList[0],
+  data: mockProducts[0],
 };

@@ -2,8 +2,8 @@ import { CampaignHeroBanner } from "@/features/campaign/components/CampaignHeroB
 import { useGetCampaignList } from "@/features/campaign/hooks/useCampaign";
 import { Loading } from "@/components/Loading";
 import { ServerError } from "@/pages/ServerError";
-import type { ICampaign } from "@/features/category/services/category";
 import { extractErrorMsg } from "@/utils/error";
+import type { ICampaign } from "@/features/campaign/services/campaign";
 
 export const Home = () => {
   const {

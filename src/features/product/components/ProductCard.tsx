@@ -2,6 +2,7 @@ import type { IProduct } from "../services/product";
 import { Link } from "react-router-dom";
 import { ProductColorSelector } from "./ProductColorSelector";
 import { useState } from "react";
+import { PriceDisplay } from "@/components/PriceDisplay";
 
 interface IProductCardProps {
   product: IProduct;
@@ -29,7 +30,7 @@ export const ProductCard = ({ product }: IProductCardProps) => {
 
   return (
     <Link to={`/product/${product.id}?color=${selectedColor}`}>
-      <div className="group cursor-pointer aspect-square">
+      <div className="group cursor-pointer aspect-square ">
         <div className="relative overflow-hidden ">
           <img
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
@@ -49,19 +50,10 @@ export const ProductCard = ({ product }: IProductCardProps) => {
 
         <div className="line-clamp-1">{product.name}</div>
 
-        {product.discountPrice ? (
-          <div>
-            <div className="flex flex-row gap-5">
-              <div className="text-red-500">${product.discountPrice}</div>
-
-              <div className="line-through">${product.price}</div>
-            </div>
-          </div>
-        ) : (
-          <div>
-            <div>${product.price}</div>
-          </div>
-        )}
+        <PriceDisplay
+          discountPrice={product.discountPrice}
+          price={product.price}
+        />
 
         <ProductColorSelector
           product={product}

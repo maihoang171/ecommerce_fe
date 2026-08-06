@@ -2,8 +2,8 @@
 import "@testing-library/jest-dom/vitest";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { CartToast, type CartToastProps } from "../components/CartToast";
-import { mockProductList } from "@/tests/mockData";
 import { cleanup, render, screen } from "@testing-library/react";
+import { mockProducts } from "@/tests/mockProductData";
 
 describe("Cart Toast", () => {
   beforeEach(() => {
@@ -14,7 +14,7 @@ describe("Cart Toast", () => {
     cleanup();
   });
   const mockProps = {
-    product: mockProductList[1],
+    product: mockProducts[1],
     color: "Red",
     size: "M",
     quantity: 1,
@@ -61,7 +61,7 @@ describe("Cart Toast", () => {
   });
 
   it("should display discount price for sale product", () => {
-    const propsWithSaleProduct = { ...mockProps, product: mockProductList[0] };
+    const propsWithSaleProduct = { ...mockProps, product: mockProducts[0] };
 
     render(<CartToast {...propsWithSaleProduct} />);
 

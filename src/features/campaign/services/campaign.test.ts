@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { axiosClient } from "@/services/axios";
 import { getCampaignListService } from "../services/campaign";
+import { mockMenCampaigns } from "@/tests/mockCategoryListData";
 
 vi.mock("@/services/axios", () => ({
   axiosClient: {
@@ -15,27 +16,17 @@ describe("campaign service", () => {
 
   describe("getCampaignListService", () => {
     it("should fetch and return campaign list successfully", async () => {
-      const mockCampaigns = [
-        {
-          id: "1",
-          title: "Summer Sale",
-          subTitle: "Up to 50% off",
-          imageUrl: "img.png",
-          linkUrl: "/sale",
-        },
-      ];
-
       vi.mocked(axiosClient.get).mockResolvedValueOnce({
         data: {
           success: true,
-          data: mockCampaigns,
+          data: mockMenCampaigns,
         },
       });
 
       const result = await getCampaignListService();
 
       expect(axiosClient.get).toHaveBeenCalledWith("/campaign");
-      expect(result).toEqual(mockCampaigns);
+      expect(result).toEqual(mockMenCampaigns);
     });
 
     it("should return an empty array when campaign data is missing", async () => {

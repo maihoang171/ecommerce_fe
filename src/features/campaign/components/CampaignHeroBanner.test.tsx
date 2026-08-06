@@ -4,7 +4,7 @@ import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, it, vi, expect } from "vitest";
 import { CampaignHeroBanner } from "./CampaignHeroBanner";
 import { MemoryRouter } from "react-router-dom";
-import { mockCategoryList } from "@/tests/mockData";
+import { mockCategoryList } from "@/tests/mockCategoryListData";
 
 describe("CampaignHeroBanner", () => {
   beforeEach(() => {

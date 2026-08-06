@@ -7,12 +7,15 @@ import { MemoryRouter } from "react-router-dom";
 import userEvent from "@testing-library/user-event";
 import { useAuthStore } from "@/features/auth/stores/useAuthStore";
 import { useAuthModalStore } from "@/features/auth/stores/useAuthModalStore";
-import { mockCartItems, mockUserData } from "@/tests/mockData";
 import { useLogout } from "@/features/auth/hooks/useAuth";
 import {
   useCartStore,
-  type ICartItem,
+  type ILocalCartItem,
 } from "@/features/cart/stores/useCartStore";
+import { useGetCart } from "@/features/cart/hooks/useCart";
+import type { IDbCart } from "@/features/cart/services/cart";
+import { mockDbCart, mockLocalCartItems } from "@/tests/mockCartData";
+import { mockUser } from "@/tests/mockUserData";
 
 vi.mock("../features/category/components/CategoryNav", () => ({
   CategoryNav: () => <div data-testid="category-nav">Mock Category Nav</div>,
@@ -32,6 +35,10 @@ vi.mock("@/features/auth/hooks/useAuth", () => ({
   useLogout: vi.fn(),
 }));
 
+vi.mock("@/features/cart/hooks/useCart", () => ({
+  useGetCart: vi.fn(),
+}));
+
 describe("Header", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -44,14 +51,15 @@ describe("Header", () => {
   const mockHandleLogout = vi.fn(() => {
     useAuthStore.getState().clearAuth();
   });
+
   const setupMocks = ({
     user = null,
     authMode = null,
     cart = [],
   }: {
-    user?: typeof mockUserData | null;
+    user?: typeof mockUser | null;
     authMode?: "login" | "register" | null;
-    cart?: ICartItem[];
+    cart?: ILocalCartItem[] | IDbCart;
   } = {}) => {
     useAuthModalStore.setState({ authMode });
 
@@ -61,7 +69,14 @@ describe("Header", () => {
       useAuthStore.getState().clearAuth();
     }
 
-    useCartStore.setState({ cart: cart as ICartItem[] });
+    vi.mocked(useGetCart).mockReturnValue({
+    data: user ? mockDbCart : null,
+    isPending: false,
+    isError: false,
+    error: null,
+  } as unknown as ReturnType<typeof useGetCart>);
+
+    useCartStore.setState({ cart: cart as ILocalCartItem[] });
 
     vi.mocked(useLogout).mockReturnValue({
       mutate: mockHandleLogout,
@@ -87,7 +102,7 @@ describe("Header", () => {
   describe("when user is a guest (log out)", () => {
     it("should render standard navigation categories, and a generic login trigger", () => {
       setupMocks({
-        cart: mockCartItems,
+        cart: mockLocalCartItems,
       });
 
       const { navContainer } = renderComponent();
@@ -118,20 +133,24 @@ describe("Header", () => {
 
   describe("when user is logged in", () => {
     it("should display user name when logged in", () => {
-      setupMocks({ user: mockUserData });
+      setupMocks({ user: mockUser });
 
       const { navContainer } = renderComponent();
 
       expect(
-        within(navContainer).getByText(`Hi, ${mockUserData.username}`),
+        within(navContainer).getByText(`Hi, ${mockUser.username}`),
       ).toBeInTheDocument();
 
-      expect(useAuthStore.getState().user).toEqual(mockUserData);
+      expect(useAuthStore.getState().user).toEqual(mockUser);
       expect(useAuthStore.getState().accessToken).toEqual("token");
     });
 
+    it("should display total quantity 0 when cart items is empty" ,() => {
+      setupMocks()
+    })
+
     it("should log out when clicked", async () => {
-      setupMocks({ user: mockUserData });
+      setupMocks({ user: mockUser });
 
       const { navContainer } = renderComponent();
 

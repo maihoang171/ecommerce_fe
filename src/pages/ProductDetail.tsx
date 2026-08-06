@@ -10,14 +10,18 @@ import { Loading } from "@/components/Loading";
 import { ProductSizeSelector } from "../features/product/components/ProductSizeSelector";
 import { ProductCard } from "../features/product/components/ProductCard";
 import { useAddToCart } from "@/features/cart/hooks/useCart";
-import type { ICartItem } from "@/features/cart/services/cart";
+import type { IDbCartItemPayLoad } from "@/features/cart/services/cart";
 import { ServerError } from "@/pages/ServerError";
 import { extractErrorMsg } from "@/utils/error";
 import { ProductQuantitySelector } from "../features/product/components/ProductQuantitySelector";
 import { useState } from "react";
+import { PriceDisplay } from "@/components/PriceDisplay";
+import { useAuthStore } from "@/features/auth/stores/useAuthStore";
+import type { ILocalCartItem } from "@/features/cart/stores/useCartStore";
 
 export const ProductDetail = () => {
   const { id } = useParams();
+  const { user } = useAuthStore();
 
   const {
     data: product,
@@ -71,14 +75,30 @@ export const ProductDetail = () => {
   if (!product) return <Navigate to="not-found" replace />;
 
   const onAddToCart = () => {
-    const cartItem: ICartItem = {
-      productId: Number(product.id),
-      color: selectedColor,
-      size: selectedSize!,
-      quantity: quantity,
-    };
+    if (!user) {
+      const cartItemLocal = {
+        productId: Number(product.id),
+        color: selectedColor,
+        size: selectedSize,
+        quantity,
+        stockQuantity,
+        name: product.name,
+        price: product.price,
+        discountPrice: product.discountPrice,
+        images: product.images,
+      } as ILocalCartItem;
 
-    handleAddToCart({ cartItem, product });
+      handleAddToCart({ cartItem: cartItemLocal, product });
+    } else {
+      const cartItemDb = {
+        productId: Number(product.id),
+        color: selectedColor,
+        size: selectedSize,
+        quantity,
+      } as IDbCartItemPayLoad;
+      
+      handleAddToCart({ cartItem: cartItemDb, product });
+    }
   };
 
   const handleSelectColor = (color: string) => {
@@ -113,21 +133,13 @@ export const ProductDetail = () => {
           ))}
         </Swiper>
 
-        <div className="flex-1 mt-5 space-y-5 lg:px-48 lg:pt-16">
+        <div className="flex-1 mt-5 space-y-5 lg:px-32 lg:pt-16">
           <div className="font-bold text-2xl">{product.name}</div>
 
-          {product?.discountPrice ? (
-            <div className="flex flex-row gap-5">
-              <div className="text-red-500" data-testid="discount-price">
-                ${product.discountPrice}
-              </div>
-              <div className="line-through">${product.price}</div>
-            </div>
-          ) : (
-            <div>
-              <div data-testid="original-price">${product.price}</div>
-            </div>
-          )}
+          <PriceDisplay
+            discountPrice={product.discountPrice}
+            price={product.price}
+          />
 
           <div>
             {" "}

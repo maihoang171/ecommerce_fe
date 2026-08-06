@@ -1,40 +1,59 @@
 import { CartToast } from "../components/CartToast";
 import { queryClient } from "@/main";
-import { addToCartService, type ICartItem } from "@/features/cart/services/cart";
+import {
+  addToCartService,
+  getCartService,
+  type IDbCartItemPayLoad,
+} from "@/features/cart/services/cart";
 import type { IProduct } from "@/features/product/services/product";
 import { useAuthStore } from "@/features/auth/stores/useAuthStore";
-import { useCartStore } from "@/features/cart/stores/useCartStore";
+import {
+  useCartStore,
+  type ILocalCartItem,
+} from "@/features/cart/stores/useCartStore";
 import { extractErrorMsg } from "@/utils/error";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 interface ICartVariables {
-  cartItem: ICartItem;
+  cartItem: ILocalCartItem | IDbCartItemPayLoad;
   product: IProduct;
-  stockQuantity?: number;
 }
 
 export const useAddToCart = () => {
   const { user } = useAuthStore();
-  const { addToLocalCart } = useCartStore();
+  const { addToLocalCart, getItemQuantity } = useCartStore();
 
   return useMutation({
     mutationFn: async (variables: ICartVariables) => {
       if (!user) {
-        addToLocalCart(
-          {
-            productId: variables.cartItem.productId,
-            color: variables.cartItem.color,
-            size: variables.cartItem.size,
-            quantity: variables.cartItem.quantity,
-          },
-          variables.stockQuantity ?? Infinity,
+        const localCartItem = variables.cartItem as ILocalCartItem;
+        const currentInCart = getItemQuantity(
+          localCartItem.productId,
+          localCartItem.color,
+          localCartItem.size,
         );
+        const stockLimit = localCartItem.stockQuantity;
+        if (currentInCart + localCartItem.quantity > stockLimit) {
+          throw Error("Requested quantity exceeds stock quantity available!");
+        }
+
+        addToLocalCart({
+          productId: localCartItem.productId,
+          color: localCartItem.color,
+          size: localCartItem.size,
+          quantity: localCartItem.quantity,
+          stockQuantity: localCartItem.stockQuantity,
+          name: localCartItem.name,
+          price: localCartItem.price,
+          discountPrice: localCartItem.discountPrice,
+          images: localCartItem.images,
+        } as ILocalCartItem);
 
         return { success: true };
       }
 
-      return addToCartService(variables.cartItem);
+      return addToCartService(variables.cartItem as IDbCartItemPayLoad);
     },
 
     onSuccess: (_, variables) => {
@@ -61,5 +80,15 @@ export const useAddToCart = () => {
       const msg = extractErrorMsg(error);
       console.error("Failed to add item to cart: " + msg);
     },
+  });
+};
+
+export const useGetCart = () => {
+  const {user} = useAuthStore()
+  
+  return useQuery({
+    queryKey: ["cart"],
+    queryFn: () => getCartService(),
+    enabled:!!user
   });
 };

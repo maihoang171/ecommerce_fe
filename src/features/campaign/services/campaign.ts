@@ -1,8 +1,8 @@
 import { axiosClient } from "@/services/axios";
 import type { ApiResponse } from "@/services/type";
 
-interface ICampaign {
-  id: string;
+export interface ICampaign {
+  id: number;
   title: string;
   subTitle: string;
   imageUrl: string;

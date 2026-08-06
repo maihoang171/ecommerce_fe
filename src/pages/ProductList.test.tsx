@@ -8,8 +8,9 @@ import { ProductList } from "./ProductList";
 import { useGetProductList } from "@/features/product/hooks/useProduct";
 import { useGetCategoryList } from "@/features/category/hooks/useCategory";
 import type { IProduct } from "@/features/product/services/product";
-import { mockCategoryList, mockProductList } from "@/tests/mockData";
+import { mockCategoryList } from "@/tests/mockCategoryListData";
 import type { IParentCategory } from "@/features/category/services/category";
+import { mockProducts } from "@/tests/mockProductData";
 
 vi.mock("@/features/product/hooks/useProduct", () => ({
   useGetProductList: vi.fn(),
@@ -122,7 +123,7 @@ describe("ProductList Component", () => {
   });
 
   it("should render products and child category navigation tabs successfully", async () => {
-    setupMocks({ productsData: mockProductList });
+    setupMocks({ productsData: mockProducts });
 
     renderComponent();
 

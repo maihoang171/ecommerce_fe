@@ -1,11 +1,11 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { mockProductList } from "@/tests/mockData";
 import { cleanup, render, screen } from "@testing-library/react";
 import { ProductColorSelector } from "./ProductColorSelector";
 import userEvent from "@testing-library/user-event";
 import type { IProduct } from "../services/product";
+import { mockProducts } from "@/tests/mockProductData";
 
 describe("ProductColorSelector component", () => {
   beforeAll(() => {
@@ -33,8 +33,8 @@ describe("ProductColorSelector component", () => {
   it("should render exactly one button per color", () => {
     render(
       <ProductColorSelector
-        product={mockProductList[0]}
-        selectedColor={mockProductList[0].variants[0].color}
+        product={mockProducts[0]}
+        selectedColor={mockProducts[0].variants[0].color}
         onSelectColor={mockOnSelectColor}
       />,
     );
@@ -46,8 +46,8 @@ describe("ProductColorSelector component", () => {
   it("should call onSelector with the correct color name when clicked", async () => {
     render(
       <ProductColorSelector
-        product={mockProductList[0]}
-        selectedColor={mockProductList[0].variants[0].color} // Red color
+        product={mockProducts[0]}
+        selectedColor={mockProducts[0].variants[0].color} // Red color
         onSelectColor={mockOnSelectColor}
       />,
     );

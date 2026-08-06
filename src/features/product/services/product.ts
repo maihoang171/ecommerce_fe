@@ -2,22 +2,23 @@ import { axiosClient } from "@/services/axios";
 import type { ApiResponse } from "@/services/type";
 
 export interface IProductImage {
-  id: string;
+  id: number;
   color: string;
   imageUrl: string;
   isPrimary: boolean;
 }
 
 export interface IProductVariant {
-  id: string;
+  id: number;
   size: string;
   color: string;
   stockQuantity: number;
   sku: string;
+  product: IProduct;
 }
 
 export interface IProduct {
-  id: string;
+  id: number;
   name: string;
   price: number;
   discountPrice?: number;
