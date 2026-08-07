@@ -19,7 +19,6 @@ export const CategoryNav = () => {
 
   const activeCategorySlug = hoveredSlug || parentSlug;
 
-
   const displayCategory =
     categories.find((c) => c.slug === activeCategorySlug) ?? categories[0];
 

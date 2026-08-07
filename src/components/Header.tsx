@@ -10,12 +10,13 @@ import { LoginModal } from "../features/auth/components/LoginModal";
 import { RegisterModal } from "../features/auth/components/RegisterModal";
 import { useCartStore } from "@/features/cart/stores/useCartStore";
 import { useGetCart } from "@/features/cart/hooks/useCart";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 export const Header = () => {
   const { openLogin } = useAuthModalStore();
   const { user } = useAuthStore();
   const { mutate: handleLogout } = useLogout();
+  const [isOpenSearchInput, setIsOpenSearchInput] = useState(false);
 
   const localCart = useCartStore((state) => state.cart);
   const localTotal = useMemo(
@@ -59,13 +60,15 @@ export const Header = () => {
           {/* TODO: handle search and shopping cart features */}
           <div>
             <div className="flex flex-row items-center justify-end gap-2 md:gap-3">
-              <Link
-                to=""
+              <button
+                type="button"
                 aria-label="Search products"
                 className="hover:text-gray-500 transition-colors p-1 hover:cursor-pointer"
+                onClick={() => setIsOpenSearchInput(!isOpenSearchInput)}
               >
                 <Search className="w-5 h-5 md:w-6 md:h-6" strokeWidth={1.5} />
-              </Link>
+              </button>
+
               <Link
                 to="/cart"
                 aria-label="View Shopping Cart"
@@ -73,7 +76,6 @@ export const Header = () => {
               >
                 <Handbag className="w-5 h-5 md:w-6 md:h-6" strokeWidth={1.5} />
 
-                {/* TODO: update product quantity */}
                 <span className="absolute -bottom-4 left-1/2 -translate-x-1/2 scale-75 md:scale-100">
                   {user ? dbTotal : localTotal}
                 </span>
@@ -125,6 +127,21 @@ export const Header = () => {
             </div>
           </div>
         </nav>
+
+        {/* Search BackDrop*/}
+        <div
+          onClick={() => setIsOpenSearchInput(false)}
+          className={`fixed inset-0 bg-black/50 h-full z-40 transition-opacity duration-300 ${
+            isOpenSearchInput
+              ? "opacity-100 pointer-events-auto cursor-pointer"
+              : "opacity-0 pointer-events-none"
+          }`}
+        />
+
+        {/* Search Input*/}
+        <div
+          className={`fixed top-0 right-0 z-50 h-full w-80 bg-white ${isOpenSearchInput ? "opacity-100 visible " : "opacity-0 invisible"} duration-300 ease-in-out`}
+        ></div>
 
         <LoginModal />
         <RegisterModal />
