@@ -54,9 +54,20 @@ export const getProductService = async (id: string): Promise<IProduct> => {
   const res = await axiosClient.get<ApiResponse<IProduct>>(`product/${id}`);
 
   const product = res.data.data;
+
   if (!product) {
     throw new Error(`Product with ID ${id} not found`);
   }
 
   return product;
+};
+
+export const searchProductsService = async (q: string) => {
+  const res = await axiosClient.get<ApiResponse<IProduct[]>>("product/search", {
+    params: { q },
+  });
+
+  const products = res.data.data;
+
+  return products ?? [];
 };

@@ -1,6 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useGetProductList } from "@/features/product/hooks/useProduct";
-import { ProductCard } from "@/features/product/components/ProductCard";
 import { Loading } from "@/components/Loading";
 import type { IProduct } from "@/features/product/services/product";
 import { ServerError } from "@/pages/ServerError";
@@ -8,6 +7,7 @@ import { useGetCategoryList } from "@/features/category/hooks/useCategory";
 import type { IParentCategory } from "@/features/category/services/category";
 import { extractErrorMsg } from "@/utils/error";
 import { useEffect } from "react";
+import { ProductGrid } from "@/features/product/components/ProductGrid";
 
 export const ProductList = () => {
   const { parentSlug, childSlug } = useParams<{
@@ -50,13 +50,13 @@ export const ProductList = () => {
     return <ServerError message={msg} />;
   }
 
-  if (isGetProductListPending || isCategoryLoading) return <Loading />;
+  if (isCategoryLoading) return <Loading />;
 
   return (
     <div className="mb-5">
       <div className="text-3xl font-bold">{currentChildCategory?.name}</div>
 
-      <div className="flex gap-5 mt-5 text-xl border-b border-gray-300 hover:overflow-x-auto flex-nowrap font-light">
+      <div className="flex mt-5 md:mt-0 gap-5 text-xl border-b border-gray-300 hover:overflow-x-auto flex-nowrap font-light">
         {currentCategoryList?.children.map((c) => {
           const isSelected = childSlug === c.slug;
           return (
@@ -70,23 +70,12 @@ export const ProductList = () => {
           );
         })}
       </div>
-      <div className="my-5 text-sm text-gray-500">
-        {productList.length} products
-      </div>
 
-      {productList.length > 0 ? (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-          {productList.map((p) => (
-            <div key={p.id}>
-              <ProductCard product={p} />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="w-full min-h-[70vh] flex justify-center items-center">
-          No products has found
-        </div>
-      )}
+      <ProductGrid
+        products={productList}
+        isPending={isGetProductListPending}
+        emptyMessage="No product found in this category!"
+      />
     </div>
   );
 };

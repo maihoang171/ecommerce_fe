@@ -10,12 +10,14 @@ import { LoginModal } from "../features/auth/components/LoginModal";
 import { RegisterModal } from "../features/auth/components/RegisterModal";
 import { useCartStore } from "@/features/cart/stores/useCartStore";
 import { useGetCart } from "@/features/cart/hooks/useCart";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { SearchDrawer } from "@/components/SearchDrawer";
 
 export const Header = () => {
   const { openLogin } = useAuthModalStore();
   const { user } = useAuthStore();
   const { mutate: handleLogout } = useLogout();
+  const [isOpenSearchInput, setIsOpenSearchInput] = useState(false);
 
   const localCart = useCartStore((state) => state.cart);
   const localTotal = useMemo(
@@ -28,6 +30,7 @@ export const Header = () => {
     () => (dbCart?.items ?? []).reduce((sum, item) => sum + item.quantity, 0),
     [dbCart?.items],
   );
+
   const userInitial = getInitials(user?.username ?? "");
 
   return (
@@ -56,16 +59,17 @@ export const Header = () => {
           </div>
 
           {/* =========================================RIGHT SECTION: UTILITIES */}
-          {/* TODO: handle search and shopping cart features */}
           <div>
             <div className="flex flex-row items-center justify-end gap-2 md:gap-3">
-              <Link
-                to=""
+              <button
+                type="button"
                 aria-label="Search products"
                 className="hover:text-gray-500 transition-colors p-1 hover:cursor-pointer"
+                onClick={() => setIsOpenSearchInput(true)}
               >
                 <Search className="w-5 h-5 md:w-6 md:h-6" strokeWidth={1.5} />
-              </Link>
+              </button>
+
               <Link
                 to="/cart"
                 aria-label="View Shopping Cart"
@@ -73,7 +77,6 @@ export const Header = () => {
               >
                 <Handbag className="w-5 h-5 md:w-6 md:h-6" strokeWidth={1.5} />
 
-                {/* TODO: update product quantity */}
                 <span className="absolute -bottom-4 left-1/2 -translate-x-1/2 scale-75 md:scale-100">
                   {user ? dbTotal : localTotal}
                 </span>
@@ -125,6 +128,11 @@ export const Header = () => {
             </div>
           </div>
         </nav>
+
+        <SearchDrawer
+          isOpen={isOpenSearchInput}
+          onClose={() => setIsOpenSearchInput(false)}
+        />
 
         <LoginModal />
         <RegisterModal />

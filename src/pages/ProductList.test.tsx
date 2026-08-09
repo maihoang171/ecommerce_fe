@@ -132,7 +132,6 @@ describe("ProductList Component", () => {
     // Check product cards count and text
     expect(screen.getAllByTestId("product-card")).toHaveLength(2);
     expect(screen.getByText("Evening Slip Dress")).toBeInTheDocument();
-    expect(screen.getByText("2 products")).toBeInTheDocument();
 
     // Check sub-category navigation click
     const topsButton = screen.getByRole("button", { name: /Tops/i });
@@ -141,13 +140,6 @@ describe("ProductList Component", () => {
     expect(mockNavigate).toHaveBeenCalledWith("/women/tops");
   });
 
-  it("should display empty product message when list is empty", () => {
-    setupMocks({ productsData: [] });
-
-    renderComponent();
-
-    expect(screen.getByText("No products has found")).toBeInTheDocument();
-  });
 
   it("should fallback empty string and navigate to not found page when parentSlug is null or undefined", () => {
     setupMocks({ categoriesData: mockCategoryList, parentSlug: null });

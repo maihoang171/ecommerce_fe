@@ -96,7 +96,7 @@ export const ProductDetail = () => {
         size: selectedSize,
         quantity,
       } as IDbCartItemPayLoad;
-      
+
       handleAddToCart({ cartItem: cartItemDb, product });
     }
   };
@@ -117,9 +117,9 @@ export const ProductDetail = () => {
 
   return (
     <div>
-      <section className="flex flex-col md:gap-5 md:flex-row h-full ">
+      <section className="flex flex-col items-center md:gap-5 md:flex-row h-full ">
         <Swiper
-          className="w-full md:w-3/5 lg:w-1/2"
+          className="w-full md:w-3/5  lg:w-1/2 relative"
           modules={[Pagination, Autoplay]}
           pagination={{ clickable: true }}
           autoplay={{
@@ -144,7 +144,7 @@ export const ProductDetail = () => {
           <div>
             {" "}
             <div className="font-bold">{selectedColor}</div>
-            <div className="text-sm" data-testid="stock-quantity">
+            <div className="text-sm text-gray-500" data-testid="stock-quantity">
               Only {stockQuantity} items left
             </div>
           </div>
@@ -197,6 +197,11 @@ export const ProductDetail = () => {
                 <p className="text-sm">Add to cart</p>
               )}
             </button>
+          </div>
+
+          <div>
+            <span className="font-bold">Description:</span>{" "}
+            <div className="text-gray-500">{product.description}</div>
           </div>
         </div>
       </section>
