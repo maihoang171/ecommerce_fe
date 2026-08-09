@@ -3,7 +3,7 @@ import { saveSearchHistory, SEARCH_HISTORY_KEY } from "../utils/searchHistory";
 import { useNavigate } from "react-router-dom";
 import { X } from "lucide-react";
 
-interface SearchDrawerProps {
+export interface SearchDrawerProps {
   isOpen: boolean;
   onClose: () => void;
 }
@@ -37,6 +37,7 @@ export const SearchDrawer = ({ isOpen, onClose }: SearchDrawerProps) => {
     const updatedHistory = JSON.parse(
       localStorage.getItem(SEARCH_HISTORY_KEY) ?? "[]",
     );
+    
     setSearchHistory(updatedHistory);
 
     navigate(`product/search?q=${encodeURIComponent(trimmedQuery)}`);
@@ -65,6 +66,7 @@ export const SearchDrawer = ({ isOpen, onClose }: SearchDrawerProps) => {
             ? "opacity-100 pointer-events-auto cursor-pointer"
             : "opacity-0 pointer-events-none"
         }`}
+        data-testid="back-drop"
       />
       {/* Search Input*/}
       <div
@@ -73,6 +75,7 @@ export const SearchDrawer = ({ isOpen, onClose }: SearchDrawerProps) => {
         <form
           onSubmit={handleSearch}
           className="flex flex-row gap-4 items-center"
+          data-testid="search-form"
         >
           <input
             ref={inputRef}
@@ -87,6 +90,7 @@ export const SearchDrawer = ({ isOpen, onClose }: SearchDrawerProps) => {
           <button
             onClick={onClose}
             className="hover:text-gray-400 hover:cursor-pointer w-4 h-4"
+            data-testid="close-btn"
           >
             <X />
           </button>

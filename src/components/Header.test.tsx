@@ -16,6 +16,7 @@ import { useGetCart } from "@/features/cart/hooks/useCart";
 import type { IDbCart } from "@/features/cart/services/cart";
 import { mockDbCart, mockLocalCartItems } from "@/tests/mockCartData";
 import { mockUser } from "@/tests/mockUserData";
+import type { SearchDrawerProps } from "@/components/SearchDrawer";
 
 vi.mock("../features/category/components/CategoryNav", () => ({
   CategoryNav: () => <div data-testid="category-nav">Mock Category Nav</div>,
@@ -37,6 +38,18 @@ vi.mock("@/features/auth/hooks/useAuth", () => ({
 
 vi.mock("@/features/cart/hooks/useCart", () => ({
   useGetCart: vi.fn(),
+}));
+
+vi.mock("@/components/SearchDrawer", () => ({
+  SearchDrawer: ({ isOpen, onClose }: SearchDrawerProps) => (
+    <div data-testid="search-drawer">
+      {isOpen && (
+        <button data-testid="close-btn" onClick={onClose}>
+          Close
+        </button>
+      )}
+    </div>
+  ),
 }));
 
 describe("Header", () => {
@@ -70,11 +83,11 @@ describe("Header", () => {
     }
 
     vi.mocked(useGetCart).mockReturnValue({
-    data: user ? mockDbCart : null,
-    isPending: false,
-    isError: false,
-    error: null,
-  } as unknown as ReturnType<typeof useGetCart>);
+      data: user ? mockDbCart : null,
+      isPending: false,
+      isError: false,
+      error: null,
+    } as unknown as ReturnType<typeof useGetCart>);
 
     useCartStore.setState({ cart: cart as ILocalCartItem[] });
 
@@ -99,6 +112,40 @@ describe("Header", () => {
     };
   };
 
+  it("should display SearchDrawer component when clicked", async () => {
+    setupMocks();
+    renderComponent();
+
+    const user = userEvent.setup();
+
+    const searchBtn = screen.getByRole("button", {
+      name: /search products/i,
+    });
+
+    await user.click(searchBtn);
+
+    const searchDrawer = screen.getByTestId("search-drawer");
+    expect(searchDrawer).toBeInTheDocument();
+  });
+
+  it("closes the search drawer when onClose is called", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter>
+        <Header />
+      </MemoryRouter>,
+    );
+
+    const searchBtn = screen.getByRole("button", { name: /search products/i });
+    await user.click(searchBtn);
+
+    expect(screen.getByTestId("close-btn")).toBeInTheDocument();
+
+    await user.click(screen.getByTestId("close-btn"));
+
+    expect(screen.queryByTestId("close-btn")).not.toBeInTheDocument();
+  });
   describe("when user is a guest (log out)", () => {
     it("should render standard navigation categories, and a generic login trigger", () => {
       setupMocks({
@@ -145,9 +192,9 @@ describe("Header", () => {
       expect(useAuthStore.getState().accessToken).toEqual("token");
     });
 
-    it("should display total quantity 0 when cart items is empty" ,() => {
-      setupMocks()
-    })
+    it("should display total quantity 0 when cart items is empty", () => {
+      setupMocks();
+    });
 
     it("should log out when clicked", async () => {
       setupMocks({ user: mockUser });

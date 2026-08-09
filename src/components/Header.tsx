@@ -11,7 +11,7 @@ import { RegisterModal } from "../features/auth/components/RegisterModal";
 import { useCartStore } from "@/features/cart/stores/useCartStore";
 import { useGetCart } from "@/features/cart/hooks/useCart";
 import { useMemo, useState } from "react";
-import { SearchDrawer } from "@/features/search/components/SearchDrawer";
+import { SearchDrawer } from "@/components/SearchDrawer";
 
 export const Header = () => {
   const { openLogin } = useAuthModalStore();
@@ -32,18 +32,6 @@ export const Header = () => {
   );
 
   const userInitial = getInitials(user?.username ?? "");
-
-  // const handleToggleSearch = () => {
-  //   const nextState = !isOpenSearchInput;
-  //   setIsOpenSearchInput(nextState);
-
-  //   if (nextState) {
-  //     const history = localStorage.getItem(SEARCH_HISTORY_KEY);
-  //     if (history) {
-  //       setSearchHistory(JSON.parse(history));
-  //     }
-  //   }
-  // };
 
   return (
     <>

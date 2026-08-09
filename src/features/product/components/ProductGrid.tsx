@@ -7,10 +7,11 @@ interface ProductGridProps {
   isPending?: boolean;
   emptyMessage?: string;
 }
+
 export const ProductGrid = ({
   products,
   isPending,
-  emptyMessage = "No product found",
+  emptyMessage = "No product found!",
 }: ProductGridProps) => {
   if (isPending) {
     return <Loading />;
@@ -26,10 +27,7 @@ export const ProductGrid = ({
 
   return (
     <>
-      {" "}
-      <div className="my-5 text-sm text-gray-500">
-        {products?.length ?? 0} items
-      </div>
+      <div className="my-5 text-sm text-gray-500">{products?.length} items</div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
         {products.map((p) => (
           <div key={p.id}>

@@ -19,7 +19,7 @@ export const SearchProduct = () => {
       <ProductGrid
         products={products}
         isPending={isPending}
-        emptyMessage={`Np products found matching ${query}!`}
+        emptyMessage={`No products found matching ${query}!`}
       />
     </>
   );

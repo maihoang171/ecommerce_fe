@@ -3,6 +3,7 @@ import { axiosClient } from "@/services/axios";
 import {
   getProductListByCategorySlugService,
   getProductService,
+  searchProductsService,
 } from "@/features/product/services/product";
 import { mockProducts } from "@/tests/mockProductData";
 
@@ -71,6 +72,28 @@ describe("product service", () => {
       await expect(getProductService("999")).rejects.toThrow(
         "Product with ID 999 not found",
       );
+    });
+  });
+
+  describe("searchProduct", () => {
+    it("should return products on success", async () => {
+      vi.mocked(axiosClient.get).mockResolvedValueOnce({
+        data: { data: mockProducts },
+      });
+
+      const res = await searchProductsService("mockQuery");
+
+      expect(res).toEqual(mockProducts);
+    });
+
+    it("should fallback empty array when no products found", async () => {
+      vi.mocked(axiosClient.get).mockResolvedValueOnce({
+        data: { data: null },
+      });
+
+      const res = await searchProductsService("mockQuery");
+
+      expect(res).toEqual([]);
     });
   });
 });
