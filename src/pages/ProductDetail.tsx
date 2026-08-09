@@ -117,9 +117,9 @@ export const ProductDetail = () => {
 
   return (
     <div>
-      <section className="flex flex-col md:gap-5 md:flex-row h-full ">
+      <section className="flex flex-col items-center md:gap-5 md:flex-row h-full ">
         <Swiper
-          className="w-full md:w-3/5 lg:w-1/2"
+          className="w-full md:w-3/5  lg:w-1/2 relative"
           modules={[Pagination, Autoplay]}
           pagination={{ clickable: true }}
           autoplay={{
@@ -128,7 +128,7 @@ export const ProductDetail = () => {
         >
           {activeImages.map((image) => (
             <SwiperSlide key={image.id}>
-              <img src={image.imageUrl} className="w-full object-cover h-full" />
+              <img src={image.imageUrl} className="w-full object-cover" />
             </SwiperSlide>
           ))}
         </Swiper>
