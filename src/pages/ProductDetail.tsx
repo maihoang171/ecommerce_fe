@@ -96,7 +96,7 @@ export const ProductDetail = () => {
         size: selectedSize,
         quantity,
       } as IDbCartItemPayLoad;
-      
+
       handleAddToCart({ cartItem: cartItemDb, product });
     }
   };
@@ -128,7 +128,7 @@ export const ProductDetail = () => {
         >
           {activeImages.map((image) => (
             <SwiperSlide key={image.id}>
-              <img src={image.imageUrl} className="w-full object-cover" />
+              <img src={image.imageUrl} className="w-full object-cover h-full" />
             </SwiperSlide>
           ))}
         </Swiper>
@@ -144,7 +144,7 @@ export const ProductDetail = () => {
           <div>
             {" "}
             <div className="font-bold">{selectedColor}</div>
-            <div className="text-sm" data-testid="stock-quantity">
+            <div className="text-sm text-gray-500" data-testid="stock-quantity">
               Only {stockQuantity} items left
             </div>
           </div>
@@ -197,6 +197,11 @@ export const ProductDetail = () => {
                 <p className="text-sm">Add to cart</p>
               )}
             </button>
+          </div>
+
+          <div>
+            <span className="font-bold">Description:</span>{" "}
+            <div className="text-gray-500">{product.description}</div>
           </div>
         </div>
       </section>

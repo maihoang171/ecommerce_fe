@@ -1,22 +1,26 @@
 import { Loading } from "@/components/Loading";
-import { ProductCard } from "@/features/product/components/ProductCard";
+import { ProductGrid } from "@/features/product/components/ProductGrid";
 import { useSearchProducts } from "@/features/product/hooks/useProduct";
 import { useSearchParams } from "react-router-dom";
 
 export const SearchProduct = () => {
   const [searchParams] = useSearchParams();
   const query = searchParams.get("q") || "";
-
   const { data: products, isPending } = useSearchProducts(query);
 
   if (isPending) {
     return <Loading />;
   }
+
   return (
     <>
-      {products?.map((p) => {
-        <ProductCard product={p} />;
-      })}
+      <div>Search result</div>
+      <div className="font-bold text-4xl px-2">{query}</div>
+      <ProductGrid
+        products={products}
+        isPending={isPending}
+        emptyMessage={`Np products found matching ${query}!`}
+      />
     </>
   );
 };

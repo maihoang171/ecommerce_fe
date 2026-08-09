@@ -11,6 +11,7 @@ import { RegisterModal } from "../features/auth/components/RegisterModal";
 import { useCartStore } from "@/features/cart/stores/useCartStore";
 import { useGetCart } from "@/features/cart/hooks/useCart";
 import { useMemo, useState } from "react";
+import { SearchDrawer } from "@/features/search/components/SearchDrawer";
 
 export const Header = () => {
   const { openLogin } = useAuthModalStore();
@@ -29,7 +30,20 @@ export const Header = () => {
     () => (dbCart?.items ?? []).reduce((sum, item) => sum + item.quantity, 0),
     [dbCart?.items],
   );
+
   const userInitial = getInitials(user?.username ?? "");
+
+  // const handleToggleSearch = () => {
+  //   const nextState = !isOpenSearchInput;
+  //   setIsOpenSearchInput(nextState);
+
+  //   if (nextState) {
+  //     const history = localStorage.getItem(SEARCH_HISTORY_KEY);
+  //     if (history) {
+  //       setSearchHistory(JSON.parse(history));
+  //     }
+  //   }
+  // };
 
   return (
     <>
@@ -57,14 +71,13 @@ export const Header = () => {
           </div>
 
           {/* =========================================RIGHT SECTION: UTILITIES */}
-          {/* TODO: handle search and shopping cart features */}
           <div>
             <div className="flex flex-row items-center justify-end gap-2 md:gap-3">
               <button
                 type="button"
                 aria-label="Search products"
                 className="hover:text-gray-500 transition-colors p-1 hover:cursor-pointer"
-                onClick={() => setIsOpenSearchInput(!isOpenSearchInput)}
+                onClick={() => setIsOpenSearchInput(true)}
               >
                 <Search className="w-5 h-5 md:w-6 md:h-6" strokeWidth={1.5} />
               </button>
@@ -128,20 +141,10 @@ export const Header = () => {
           </div>
         </nav>
 
-        {/* Search BackDrop*/}
-        <div
-          onClick={() => setIsOpenSearchInput(false)}
-          className={`fixed inset-0 bg-black/50 h-full z-40 transition-opacity duration-300 ${
-            isOpenSearchInput
-              ? "opacity-100 pointer-events-auto cursor-pointer"
-              : "opacity-0 pointer-events-none"
-          }`}
+        <SearchDrawer
+          isOpen={isOpenSearchInput}
+          onClose={() => setIsOpenSearchInput(false)}
         />
-
-        {/* Search Input*/}
-        <div
-          className={`fixed top-0 right-0 z-50 h-full w-80 bg-white ${isOpenSearchInput ? "opacity-100 visible " : "opacity-0 invisible"} duration-300 ease-in-out`}
-        ></div>
 
         <LoginModal />
         <RegisterModal />
