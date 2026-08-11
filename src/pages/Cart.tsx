@@ -1,5 +1,5 @@
 import { Loading } from "@/components/Loading";
-import { useGetCart } from "@/features/cart/hooks/useCart";
+import { useDeleteCartItem, useGetCart } from "@/features/cart/hooks/useCart";
 import { extractErrorMsg } from "@/utils/error";
 import { ServerError } from "./ServerError";
 import { ProductQuantitySelector } from "@/features/product/components/ProductQuantitySelector";
@@ -17,6 +17,8 @@ export const Cart = () => {
   const { user } = useAuthStore();
   const { cart: localCart } = useCartStore();
   const { data: dbCart, isPending, error, isError } = useGetCart();
+  const { mutate: handleDeleteCartItem, isPending: isDeleting } =
+    useDeleteCartItem();
 
   const cartItems: IUiCartItem[] = useMemo(() => {
     return getNormalizedCartItems(user, dbCart, localCart);
@@ -48,10 +50,6 @@ export const Cart = () => {
           {cartItems.map((item) => {
             const activeImage = item.images.find((img) => img.isPrimary);
 
-            const displayImg = activeImage
-              ? activeImage.imageUrl
-              : item.images[0].imageUrl;
-
             const unitPrice = item.discountPrice ?? item.price;
             const totalProductPrice = unitPrice * item.quantity;
 
@@ -64,7 +62,11 @@ export const Cart = () => {
                 key={item.id}
                 className="flex flex-row gap-4 mb-4"
               >
-                <img src={displayImg} className="w-28" />
+                <img
+                  src={activeImage?.imageUrl}
+                  className="w-28"
+                  alt={`${item.name} image`}
+                />
                 <section>
                   <h3 className="font-bold">{item.name}</h3>
                   <p className="text-gray-400">
@@ -80,8 +82,12 @@ export const Cart = () => {
                       stockQuantity={item.stockQuantity}
                       onQuantityChange={handleQuantityChange}
                     />
-                    {/* TODO: handle delete item*/}
-                    <button className="hover:cursor-pointer hover:text-gray-400">
+                    <button
+                      className="hover:cursor-pointer hover:text-gray-400"
+                      disabled={isDeleting}
+                      onClick={() => handleDeleteCartItem(item)}
+                      data-testid="delete-cart-item-button"
+                    >
                       <Trash2 className="w-4" />
                     </button>
                   </div>
@@ -97,6 +103,8 @@ export const Cart = () => {
             <div className="flex justify-between">
               <span>Total Order</span> <span>${totalPrice}</span>
             </div>
+            {/* TODO: handle checkout */}
+
             <button className="w-full h-8 bg-black text-white hover:cursor-pointer hover:bg-gray-700">
               Checkout
             </button>

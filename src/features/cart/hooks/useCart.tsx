@@ -2,6 +2,7 @@ import { CartToast } from "../components/CartToast";
 import { queryClient } from "@/main";
 import {
   addToCartService,
+  deleteCartItemService,
   getCartService,
   type IDbCartItemPayLoad,
 } from "@/features/cart/services/cart";
@@ -12,8 +13,9 @@ import {
   type ILocalCartItem,
 } from "@/features/cart/stores/useCartStore";
 import { extractErrorMsg } from "@/utils/error";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import type { IUiCartItem } from "../utils/cart-utils";
 
 interface ICartVariables {
   cartItem: ILocalCartItem | IDbCartItemPayLoad;
@@ -84,11 +86,44 @@ export const useAddToCart = () => {
 };
 
 export const useGetCart = () => {
-  const {user} = useAuthStore()
-  
+  const { user } = useAuthStore();
   return useQuery({
     queryKey: ["cart"],
     queryFn: () => getCartService(),
-    enabled:!!user
+    enabled: !!user,
+  });
+};
+
+export const useDeleteCartItem = () => {
+  const { user } = useAuthStore();
+  const { removeFromLocalCart } = useCartStore();
+
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (cartItem: IUiCartItem) => {
+      if (!user) {
+        removeFromLocalCart(cartItem.productId, cartItem.color, cartItem.size);
+        return;
+      }
+      return await deleteCartItemService(Number(cartItem.id));
+    },
+
+    onSuccess: (_, cartItem) => {
+      if (user) {
+        queryClient.invalidateQueries({ queryKey: ["cart"] });
+      }
+
+      toast.success(`${cartItem.name} deleted successfully`, {
+        position: "bottom-right",
+      });
+    },
+
+    onError: (error) => {
+      const msg = extractErrorMsg(error);
+      toast.error("Failed to delete item: " + msg, {
+        position: "bottom-right",
+      });
+    },
   });
 };

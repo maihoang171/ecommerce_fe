@@ -43,7 +43,7 @@ export const useCartStore = create<ILocalCartState>((set, get) => ({
 
   getItemQuantity: (productId, color, size) => {
     const item = get().cart.find(
-      (i) => i.productId === productId && i.color === color && i.size === size
+      (i) => i.productId === productId && i.color === color && i.size === size,
     );
     return item ? item.quantity : 0;
   },
@@ -74,7 +74,7 @@ export const useCartStore = create<ILocalCartState>((set, get) => ({
     } else {
       updatedCart.push({
         ...newItem,
-        quantity: Math.min(newItem.quantity,  newItem.stockQuantity),
+        quantity: Math.min(newItem.quantity, newItem.stockQuantity),
       });
     }
 
@@ -89,7 +89,7 @@ export const useCartStore = create<ILocalCartState>((set, get) => ({
         item.color === color &&
         item.size === size
       ) {
-        const validateQty = Math.min(newQuantity, item.stockQuantity)
+        const validateQty = Math.min(newQuantity, item.stockQuantity);
         return { ...item, quantity: validateQty };
       }
       return item;
