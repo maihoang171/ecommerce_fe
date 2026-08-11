@@ -58,3 +58,8 @@ export const getCartService = async (): Promise<IDbCart> => {
 
   return cart;
 };
+
+export const deleteCartItemService = async (cartItemId: number) => {
+  const res =  await axiosClient.delete(`/cart/items/${cartItemId}`);
+  return res.data
+};

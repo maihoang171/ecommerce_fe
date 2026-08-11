@@ -1,6 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { axiosClient } from "@/services/axios";
-import { addToCartService, getCartService, syncCartService } from "./cart";
+import {
+  addToCartService,
+  deleteCartItemService,
+  getCartService,
+  syncCartService,
+} from "./cart";
 import {
   mockDbCart,
   mockDbCartItemPayload,
@@ -11,6 +16,7 @@ vi.mock("@/services/axios", () => ({
   axiosClient: {
     post: vi.fn(),
     get: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
@@ -116,6 +122,26 @@ describe("cart service", () => {
           "Failed when getting cart!",
         );
       });
+    });
+  });
+
+  describe("deleteCartItemService", () => {
+    it("should fetch and return data on success", async () => {
+      const mockRes = {
+        success: true,
+        data: null,
+        message: "Delete successfully!",
+      };
+
+      vi.mocked(axiosClient.delete).mockResolvedValue({ data: mockRes });
+
+      const mockCartItemId = 1;
+      const result = await deleteCartItemService(mockCartItemId);
+
+      expect(axiosClient.delete).toHaveBeenCalledWith(
+        `/cart/items/${mockCartItemId}`,
+      );
+      expect(result).toEqual(mockRes);
     });
   });
 });
